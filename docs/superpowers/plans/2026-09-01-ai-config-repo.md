@@ -422,10 +422,22 @@ assert_rc 0 $? "--force succeeds"
 assert_symlink_to "$home/.claude/skills/bro" "$repo/skills/bro" "--force installs the link"
 found=$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d | head -1)
 assert_contains "$found" ".backup-" "--force creates a backup directory"
-assert_file "$found/bro/SKILL.md" "the backup holds the old file"
+assert_file "$found/skills/bro/SKILL.md" "the backup keeps the old file under its namespace"
 rm -rf "$home"
 
-# --- case 5: --dry-run changes nothing ---
+# --- case 5: a basename collision across namespaces keeps both backups ---
+home=$(make_fake_home)
+mkdir -p "$home/.claude/output-styles" "$home/.claude/commands"
+printf 'old-style\n' >"$home/.claude/output-styles/eli5.md"
+printf 'old-command\n' >"$home/.claude/commands/eli5.md"
+CLAUDE_DIR="$home/.claude" bash "$script" --force >/dev/null 2>&1
+assert_rc 0 $? "--force succeeds with a colliding basename"
+found=$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d | head -1)
+assert_eq "old-style" "$(cat "$found/output-styles/eli5.md" 2>/dev/null)" "the output style backup survives"
+assert_eq "old-command" "$(cat "$found/commands/eli5.md" 2>/dev/null)" "the command backup survives too"
+rm -rf "$home"
+
+# --- case 6: --dry-run changes nothing ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --dry-run >/dev/null 2>&1
 assert_rc 0 $? "--dry-run succeeds"
@@ -433,7 +445,7 @@ assert_no_file "$home/.claude/skills/bro" "--dry-run creates no link"
 assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest"
 rm -rf "$home"
 
-# --- case 6: --dry-run reports every blocked path and exits 1 ---
+# --- case 7: --dry-run reports every blocked path and exits 1 ---
 home=$(make_fake_home)
 mkdir -p "$home/.claude/skills/bro"
 printf 'mine\n' >"$home/.claude/skills/bro/SKILL.md"
@@ -446,7 +458,7 @@ assert_contains "$out" "commands/bro.md" "--dry-run keeps going past the block"
 assert_eq "mine" "$(cat "$home/.claude/skills/bro/SKILL.md")" "--dry-run leaves the real file alone"
 assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest when blocked"
 
-# --- case 7: --dry-run --force previews the backup and still changes nothing ---
+# --- case 8: --dry-run --force previews the backup and still changes nothing ---
 out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run --force 2>&1)
 rc=$?
 assert_rc 0 $rc "--dry-run --force exits 0"
@@ -455,7 +467,7 @@ assert_eq "mine" "$(cat "$home/.claude/skills/bro/SKILL.md")" "--dry-run --force
 assert_eq "" "$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d)" "--dry-run --force creates no backup directory"
 rm -rf "$home"
 
-# --- case 8: --copy writes real files, and is safe to repeat ---
+# --- case 9: --copy writes real files, and is safe to repeat ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy succeeds"
@@ -469,7 +481,7 @@ CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy is safe to repeat"
 rm -rf "$home"
 
-# --- case 9: a bad option exits 2 ---
+# --- case 10: a bad option exits 2 ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --nope >/dev/null 2>&1
 assert_rc 2 $? "an unknown option exits 2"
@@ -576,8 +588,12 @@ install_one() {
   fi
 
   if [ "$action" = "backup" ]; then
-    mkdir -p "$BACKUP_DIR"
-    mv "$dest" "$BACKUP_DIR/"
+    # Keep the namespace in the backup path. A flat backup would let
+    # output-styles/x.md and commands/x.md collide, and `mv` overwrites
+    # silently, so one original would be lost while the script reported
+    # success.
+    mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
+    mv "$dest" "$BACKUP_DIR/$rel"
   elif [ "$action" = "replace" ]; then
     rm -rf "$dest"
   fi
@@ -676,7 +692,7 @@ Expected: seven `backup` lines and `7 changed`. A directory named
 
 ```bash
 ls -la ~/.claude/skills ~/.claude/output-styles ~/.claude/commands
-ls -1 ~/.claude/.backup-*/
+ls -R ~/.claude/.backup-*/
 cat ~/.claude/.ai-repo-manifest
 ```
 
