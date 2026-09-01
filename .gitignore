@@ -1,0 +1,12 @@
+# Secrets. These must never reach GitHub.
+*.env
+mcp.env
+secrets/
+
+# macOS noise
+.DS_Store
+
+# Local scratch
+*.local
+*.backup-*
+tmp/
