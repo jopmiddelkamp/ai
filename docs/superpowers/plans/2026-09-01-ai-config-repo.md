@@ -96,6 +96,15 @@ ln -s "$home/.claude.json" "$home/link"
 assert_symlink_to "$home/link" "$home/.claude.json" "assert_symlink_to follows a link"
 
 rm -rf "$home"
+
+# The failure path must actually fail. Every other test file's pass/fail
+# accounting rests on this, and until now it was verified only by reading.
+# finish calls exit, so run the pair inside a subshell and capture its status.
+( assert_eq a b "deliberate failure" >/dev/null 2>&1; finish ) >/dev/null 2>&1
+assert_eq "1" "$?" "finish exits 1 after a failed check"
+( assert_eq a a "deliberate pass" >/dev/null 2>&1; finish ) >/dev/null 2>&1
+assert_eq "0" "$?" "finish exits 0 when every check passed"
+
 finish
 ```
 
@@ -176,7 +185,7 @@ finish() {
 - [ ] **Step 4: Run it to make sure it passes**
 
 Run: `bash scripts/tests/test_harness.sh`
-Expected: PASS, `-- 7 checks, 0 failed`.
+Expected: PASS, `-- 9 checks, 0 failed`.
 
 - [ ] **Step 5: Write the test runner**
 
@@ -605,6 +614,14 @@ install_one() {
     mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
     mv "$dest" "$BACKUP_DIR/$rel"
   elif [ "$action" = "replace" ]; then
+    # A manifest-owned path is not always a symlink. `--copy` writes real files,
+    # and a hand edit leaves real content behind. Deleting that outright loses
+    # work while the script reports success, so back it up first. Only a symlink
+    # is safe to remove without a copy: the content lives in the repo.
+    if [ ! -L "$dest" ]; then
+      mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
+      cp -R "$dest" "$BACKUP_DIR/$rel"
+    fi
     rm -rf "$dest"
   fi
 
@@ -644,6 +661,11 @@ if [ -n "$OWNED" ]; then
     if [ "$DRY_RUN" -eq 1 ]; then
       printf '%-8s %s\n' "prune" "$rel"
     else
+      # Same rule as above: never delete real content without a copy.
+      if [ ! -L "${CLAUDE_DIR:?}/$rel" ] && [ -e "${CLAUDE_DIR:?}/$rel" ]; then
+        mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
+        cp -R "${CLAUDE_DIR:?}/$rel" "$BACKUP_DIR/$rel"
+      fi
       rm -rf "${CLAUDE_DIR:?}/$rel"
       printf '%-8s %s\n' "prune" "$rel"
     fi
@@ -833,6 +855,9 @@ bash scripts/apply-mcp.sh             # write ~/.claude.json
 - **Last checked:** 2026-09-01.
 
 ### moneybird-middelkamp-development
+- **Warning: this endpoint is read AND write.** A request can create or change
+  a real invoice, contact or ledger entry. Treat every write as a real
+  bookkeeping action, not a test.
 - **Purpose:** bookkeeping for the Middelkamp Development administration.
 - **Transport:** http, `https://moneybird.com/mcp/v1/read_write`.
 - **Secrets:** `MONEYBIRD_MIDDELKAMP_DEVELOPMENT_TOKEN`, sent as `Authorization: Bearer <token>`.
@@ -840,6 +865,7 @@ bash scripts/apply-mcp.sh             # write ~/.claude.json
 - **Last checked:** 2026-09-01.
 
 ### moneybird-holding-42
+- **Warning: this endpoint is read AND write**, same as above.
 - **Purpose:** bookkeeping for the Holding 42 administration.
 - **Transport:** http, same endpoint as above. The token selects the administration.
 - **Secrets:** `MONEYBIRD_HOLDING_42_TOKEN`.
@@ -1014,6 +1040,9 @@ Create `scripts/apply-mcp.sh`:
 # Secrets come from an env file that git never sees.
 set -euo pipefail
 
+# Everything this script writes can hold a credential.
+umask 077
+
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 CLAUDE_JSON="${CLAUDE_JSON:-$HOME/.claude.json}"
@@ -1107,7 +1136,14 @@ trap 'rm -f "$tmp"' EXIT
 jq --argjson servers "$rendered" '.mcpServers = $servers' "$CLAUDE_JSON" >"$tmp"
 jq empty "$tmp" 2>/dev/null || { printf 'apply-mcp.sh: refusing to write invalid JSON.\n' >&2; exit 1; }
 
-cp "$CLAUDE_JSON" "$CLAUDE_JSON.backup-$(date +%Y%m%d-%H%M%S)"
+# This file holds live bearer tokens. A plain redirect creates the temp file at
+# 0644 under the default umask, and the mv then carries that mode onto the
+# target, quietly making every token world-readable. Pin the mode explicitly on
+# both the replacement and the backup.
+backup="$CLAUDE_JSON.backup-$(date +%Y%m%d-%H%M%S)"
+cp "$CLAUDE_JSON" "$backup"
+chmod 600 "$backup"
+chmod 600 "$tmp"
 mv "$tmp" "$CLAUDE_JSON"
 
 printf 'wrote %s servers to %s\n' "$(printf '%s' "$rendered" | jq -r 'length')" "$CLAUDE_JSON"
@@ -1247,10 +1283,19 @@ HIGH_SIGNAL="$HIGH_SIGNAL"'|A(KIA|SIA)[0-9A-Z]{16}'
 HIGH_SIGNAL="$HIGH_SIGNAL"'|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}'
 HIGH_SIGNAL="$HIGH_SIGNAL"'|-----BEGIN [A-Z ]*PRIVATE KEY-----'
 
+# A credential introduced by name. This is the rule that catches what the other
+# two structurally cannot: a 64-character hexadecimal Trello token, which the
+# generic rule skips as a git hash, and an AWS secret key containing / or +,
+# which the generic character class excludes. Requiring a secret-shaped
+# identifier immediately before the separator is what stops it matching every
+# long path in the repo.
+NAMED='(secret|token|passwd|password|api[_-]?key|access[_-]?key|apikey)["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9/+=_.-]{16,}'
+
 # A long opaque run. Pure lowercase hexadecimal is skipped, because that is a
 # git hash. The character class deliberately excludes / + and =: a POSIX path
 # such as /Users/someone/Projects/prive/ai/scripts is over 40 characters and
-# would otherwise be reported on nearly every line of this repo.
+# would otherwise be reported on nearly every line of this repo. The NAMED rule
+# above covers the credentials this exclusion would otherwise miss.
 GENERIC_MIN=40
 
 usage() {
@@ -1324,6 +1369,14 @@ scan_file() {
     HITS=$((HITS + 1))
   done <<EOF
 $(grep -nE "$HIGH_SIGNAL" "$src" 2>/dev/null | cut -d: -f1 | sort -un)
+EOF
+
+  while IFS= read -r ln; do
+    [ -n "$ln" ] || continue
+    report "$label" "$ln"
+    HITS=$((HITS + 1))
+  done <<EOF
+$(grep -niE "$NAMED" "$src" 2>/dev/null | cut -d: -f1 | sort -un)
 EOF
 
   while IFS= read -r pair; do
@@ -1632,6 +1685,10 @@ EOF
     printf '%s\n' "$live_keys" | grep -qxF "$k" || continue
     for field in type url command; do
       rv=$(jq -r --arg k "$k" --arg f "$field" '.[$k][$f] // "-"' "$TEMPLATE")
+      # A field holding a ${VAR} cannot be compared. The machine has the
+      # rendered value and the repo has the placeholder, so they always differ
+      # and a correct machine would report permanent false drift.
+      case "$rv" in *'${'*) continue ;; esac
       lv=$(jq -r --arg k "$k" --arg f "$field" '.mcpServers[$k][$f] // "-"' "$CLAUDE_JSON")
       [ "$rv" = "$lv" ] || note "$k: $field differs (repo: $rv, machine: $lv)"
     done
@@ -1927,7 +1984,15 @@ cp -R "$work/<name>/<path>" "<local>"
 rm -rf "<local>/.git"
 ```
 
-Then re-apply any local edit the owner chose to keep.
+Then put back everything step 7 wiped:
+
+1. **Re-apply any local edit** the owner chose to keep.
+2. **Restore the artefacts step 5 listed.** `rm -rf "<local>"` removed the whole
+   directory, so a `LICENSE` this repo copied in from outside `path` is gone.
+   Copy it back. This is not optional: `sources.yaml` records a licence for
+   every entry, and losing the file breaks that claim on the very first refresh.
+
+Then confirm the directory holds what you expect before you continue.
 
 ### 8. Update the manifest
 
@@ -2696,6 +2761,8 @@ git commit -m "docs: add integration notes for eight third-party tools"
 - Create: `settings/claude-settings.json`
 - Create: `settings/plugins.md`
 - Create: `settings/README.md`
+- Create: `settings/machine/statusline-command.sh`
+- Create: `settings/machine/shell-init.sh`
 - Delete: `settings/.gitkeep`
 
 **Interfaces:**
@@ -2717,6 +2784,22 @@ bash scripts/check-secrets.sh settings/claude-settings.json
 
 Expected: `check-secrets.sh: clean`. If it reports a hit, remove that value and
 replace it with `"REDACTED"` before you continue.
+
+- [ ] **Step 2b: Store the two machine scripts**
+
+`~/.claude/settings.json` names two shell scripts by absolute path. Without
+them a rebuilt machine gets a broken status line and a bash tool that cannot
+see the user's zsh environment.
+
+```bash
+mkdir -p settings/machine
+cp ~/.claude/statusline-command.sh settings/machine/statusline-command.sh
+cp ~/.claude/shell-init.sh settings/machine/shell-init.sh
+bash scripts/check-secrets.sh settings/machine/statusline-command.sh settings/machine/shell-init.sh
+```
+
+The guard must report clean. These are copies for a hand rebuild; no script
+installs them.
 
 - [ ] **Step 3: Write the settings note**
 
@@ -2749,10 +2832,24 @@ diff <(jq -S . settings/claude-settings.json) <(jq -S . ~/.claude/settings.json)
 | `env.CLAUDE_ENV_FILE` | `~/.claude/shell-init.sh` | loads the zsh config into the bash tool |
 | `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `1` | turns on agent teams |
 
+## The two machine scripts
+
+`settings/machine/` holds copies of `~/.claude/statusline-command.sh` and
+`~/.claude/shell-init.sh`, because `claude-settings.json` names both by
+absolute path. No script installs them. On a new machine:
+
+```bash
+cp settings/machine/statusline-command.sh ~/.claude/
+cp settings/machine/shell-init.sh ~/.claude/
+chmod +x ~/.claude/statusline-command.sh
+```
+
 ## Refreshing this copy
 
 ```bash
 cp ~/.claude/settings.json settings/claude-settings.json
+cp ~/.claude/statusline-command.sh settings/machine/statusline-command.sh
+cp ~/.claude/shell-init.sh settings/machine/shell-init.sh
 bash scripts/check-secrets.sh settings/claude-settings.json
 git add settings/claude-settings.json && git commit -m "chore: refresh the settings reference"
 ```
@@ -2951,17 +3048,29 @@ machine is a copy of it.
 git clone git@github.com:jopmiddelkamp/ai.git ~/Projects/prive/ai
 cd ~/Projects/prive/ai
 
-git config core.hooksPath .githooks      # turn on the secret guard
-bash scripts/install.sh --dry-run        # see the plan
-bash scripts/install.sh                  # link skills, styles, commands
+# 1. Turn on the secret guard.
+git config core.hooksPath .githooks
 
-cp mcp/README.md /dev/null               # read it, then create the env file
-bash scripts/apply-mcp.sh --dry-run      # see which secrets are missing
-bash scripts/apply-mcp.sh                # write the MCP servers
+# 2. See what installing would do. On a machine that already has real files in
+#    ~/.claude, this prints "blocked" lines and exits 1. That is expected.
+bash scripts/install.sh --dry-run
+
+# 3. Install. Add --force when step 2 reported blocked paths: it moves each
+#    original into ~/.claude/.backup-<timestamp>/ before replacing it.
+bash scripts/install.sh --force
+
+# 4. Create the secrets file. Git never sees it.
+touch ~/.claude/mcp.env
+chmod 600 ~/.claude/mcp.env
+
+# 5. Fill it in, then check and apply.
+bash scripts/apply-mcp.sh --dry-run
+bash scripts/apply-mcp.sh
 ```
 
-Fill `~/.claude/mcp.env` with the real tokens. The table in
-[mcp/README.md](mcp/README.md) says where to get each one.
+**Step 5 needs you to edit `~/.claude/mcp.env` by hand first.** The table in
+[mcp/README.md](mcp/README.md) says where each of the six values comes from.
+`--dry-run` prints `MISSING` for anything you have not filled in yet.
 
 ## Daily use
 
@@ -2978,7 +3087,7 @@ Fill `~/.claude/mcp.env` with the real tokens. The table in
 bash scripts/install.sh      # link this repo into ~/.claude
 bash scripts/apply-mcp.sh    # write the MCP servers into ~/.claude.json
 bash scripts/check-drift.sh  # what differs between repo and machine
-bash scripts/check-secrets.sh# is anything leaking
+bash scripts/check-secrets.sh  # is anything leaking
 bash scripts/tests/run.sh    # run every test
 ```
 
@@ -3064,10 +3173,12 @@ interactive session, or in the claude.ai connector settings.
 
 | File | What it does | In repo |
 |---|---|---|
-| `statusline-command.sh` | status line styled after the robbyrussell zsh theme | no, referenced in `settings/README.md` |
-| `shell-init.sh` | loads `.zshrc` and `.zprofile` into the bash tool | no, referenced in `settings/README.md` |
+| `statusline-command.sh` | status line styled after the robbyrussell zsh theme | yes, copy in `settings/machine/` |
+| `shell-init.sh` | loads `.zshrc` and `.zprofile` into the bash tool | yes, copy in `settings/machine/` |
 
-Both are small and machine-specific. They stay where they are.
+No script installs these two. `settings/claude-settings.json` points at them by
+absolute path, so a rebuild copies them from `settings/machine/` into
+`~/.claude/` by hand and runs `chmod +x` on the status line.
 
 ## Hooks
 
