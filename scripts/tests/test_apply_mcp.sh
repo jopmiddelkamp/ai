@@ -45,5 +45,16 @@ CLAUDE_JSON="$home/.claude.json" MCP_ENV_FILE="$good_env" bash "$script" --dry-r
 assert_rc 0 $? "--dry-run succeeds"
 assert_eq "null" "$(jq -r '.mcpServers' "$home/.claude.json")" "--dry-run writes no servers"
 
+# --- case 4: a corrupt target is refused, and leaves no temp file ---
+bad_home=$(make_fake_home)
+printf 'this is not json\n' >"$bad_home/.claude.json"
+out=$(CLAUDE_JSON="$bad_home/.claude.json" MCP_ENV_FILE="$good_env" bash "$script" 2>&1)
+rc=$?
+assert_rc 1 $rc "a corrupt target file is refused with exit 1"
+assert_contains "$out" "not valid JSON" "the error explains why"
+assert_eq "this is not json" "$(cat "$bad_home/.claude.json")" "the corrupt file is left untouched"
+assert_eq "" "$(find "$bad_home" -name '*.tmp.*' 2>/dev/null)" "no temp file is left behind"
+rm -rf "$bad_home"
+
 rm -rf "$home" "$good_env" "$bad_env"
 finish

@@ -18,6 +18,7 @@ Usage: apply-mcp.sh [--dry-run]
   --dry-run  Show which variables are set and which are missing. Write nothing.
 
 Environment:
+  CLAUDE_DIR    Base directory. Default: $HOME/.claude
   CLAUDE_JSON   Target file. Default: $HOME/.claude.json
   MCP_ENV_FILE  Secrets file. Default: $CLAUDE_DIR/mcp.env
 USAGE
@@ -79,9 +80,21 @@ printf '%s' "$rendered" | jq empty 2>/dev/null || {
 
 [ -f "$CLAUDE_JSON" ] || printf '{}\n' >"$CLAUDE_JSON"
 
+# Check the target before touching it. Without this, a target that is already
+# corrupt makes the jq call below fail under `set -e`, which aborts the script
+# with jq's own exit code and leaves an empty temp file next to the user's
+# config forever.
+if ! jq empty "$CLAUDE_JSON" 2>/dev/null; then
+  printf 'apply-mcp.sh: %s is not valid JSON. Refusing to touch it.\n' "$CLAUDE_JSON" >&2
+  printf 'apply-mcp.sh: restore it from a .backup- copy first.\n' >&2
+  exit 1
+fi
+
 tmp="$CLAUDE_JSON.tmp.$$"
+# Clean the temp file up on every exit path, including an abort under `set -e`.
+trap 'rm -f "$tmp"' EXIT
 jq --argjson servers "$rendered" '.mcpServers = $servers' "$CLAUDE_JSON" >"$tmp"
-jq empty "$tmp" 2>/dev/null || { rm -f "$tmp"; printf 'apply-mcp.sh: refusing to write invalid JSON.\n' >&2; exit 1; }
+jq empty "$tmp" 2>/dev/null || { printf 'apply-mcp.sh: refusing to write invalid JSON.\n' >&2; exit 1; }
 
 cp "$CLAUDE_JSON" "$CLAUDE_JSON.backup-$(date +%Y%m%d-%H%M%S)"
 mv "$tmp" "$CLAUDE_JSON"
