@@ -33,6 +33,9 @@ bash scripts/apply-mcp.sh             # write ~/.claude.json
 - **Last checked:** 2026-09-01.
 
 ### moneybird-middelkamp-development
+- **Warning: this endpoint is read AND write.** A request can create or change
+  a real invoice, contact or ledger entry. Treat every write as a real
+  bookkeeping action, not a test.
 - **Purpose:** bookkeeping for the Middelkamp Development administration.
 - **Transport:** http, `https://moneybird.com/mcp/v1/read_write`.
 - **Secrets:** `MONEYBIRD_MIDDELKAMP_DEVELOPMENT_TOKEN`, sent as `Authorization: Bearer <token>`.
@@ -40,6 +43,7 @@ bash scripts/apply-mcp.sh             # write ~/.claude.json
 - **Last checked:** 2026-09-01.
 
 ### moneybird-holding-42
+- **Warning: this endpoint is read AND write**, same as above.
 - **Purpose:** bookkeeping for the Holding 42 administration.
 - **Transport:** http, same endpoint as above. The token selects the administration.
 - **Secrets:** `MONEYBIRD_HOLDING_42_TOKEN`.

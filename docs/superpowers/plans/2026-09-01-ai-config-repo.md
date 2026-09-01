@@ -500,7 +500,13 @@ CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy is safe to repeat"
 rm -rf "$home"
 
-# --- case 10: a bad option exits 2 ---
+# --- case 10: refuse to install into the repo itself ---
+out=$(CLAUDE_DIR="$repo" bash "$script" --dry-run 2>&1)
+assert_rc 2 $? "CLAUDE_DIR inside the repo exits 2"
+assert_contains "$out" "inside the repo" "the error says why"
+assert_eq "" "$(find "$repo/skills" -type l 2>/dev/null)" "no self-link was created in the repo"
+
+# --- case 11: a bad option exits 2 ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --nope >/dev/null 2>&1
 assert_rc 2 $? "an unknown option exits 2"
@@ -561,6 +567,20 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+# Refuse to install into the repo itself. If CLAUDE_DIR resolves inside
+# REPO_ROOT then a destination can equal its own source, and two things go
+# wrong at once: `rm -rf "$dest"` would delete the source, and `ln -s src dest`
+# onto an existing directory silently creates a nested self-link inside it
+# rather than failing. This has happened once, from a mistyped test.
+CANON_CLAUDE_DIR=$(cd "$CLAUDE_DIR" 2>/dev/null && pwd || printf '%s' "$CLAUDE_DIR")
+case "$CANON_CLAUDE_DIR" in
+  "$REPO_ROOT"|"$REPO_ROOT"/*)
+    printf 'install.sh: CLAUDE_DIR (%s) is inside the repo (%s).\n' "$CANON_CLAUDE_DIR" "$REPO_ROOT" >&2
+    printf 'install.sh: that would make a destination its own source. Refusing.\n' >&2
+    exit 2
+    ;;
+esac
+
 OWNED=""
 [ -f "$MANIFEST" ] && OWNED=$(cat "$MANIFEST")
 
@@ -618,7 +638,7 @@ install_one() {
     # and a hand edit leaves real content behind. Deleting that outright loses
     # work while the script reports success, so back it up first. Only a symlink
     # is safe to remove without a copy: the content lives in the repo.
-    if [ ! -L "$dest" ]; then
+    if [ ! -L "$dest" ] && [ -e "$dest" ]; then
       mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
       cp -R "$dest" "$BACKUP_DIR/$rel"
     fi
