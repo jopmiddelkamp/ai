@@ -1743,7 +1743,15 @@ else
   _fail "found $count skills to check" "the skills directory is empty"
 fi
 
-# Every vendored skill must appear in sources.yaml.
+# Every local: path in sources.yaml must point at something that exists.
+while IFS= read -r loc; do
+  [ -n "$loc" ] || continue
+  assert_file "$repo/$loc" "sources.yaml entry resolves: $loc"
+done <<EOF
+$(grep -E '^[[:space:]]+local:' "$repo/sources.yaml" 2>/dev/null | sed -E 's/^[[:space:]]*local:[[:space:]]*//')
+EOF
+
+# And humanizer, the one vendored skill today, must still be listed by name.
 if grep -q '^  - name: humanizer' "$repo/sources.yaml" 2>/dev/null; then
   _pass "sources.yaml lists humanizer"
 else
@@ -1859,7 +1867,9 @@ git -C "$work/<name>" log --oneline "<pinned>..origin/<ref>" -- "<path>"
 ```
 
 If that command lists nothing, the changes did not touch `path`. Report that,
-update `pinned` and `pinned_at` anyway, and move on.
+update `pinned` and `pinned_at` anyway, then still run step 9 and commit in
+step 9's own words — a manifest-only change is a change, and leaving it
+uncommitted means the next run repeats the same fetch and the same report.
 
 ### 4. Show the upstream diff
 
@@ -1876,11 +1886,22 @@ Check the local copy against the upstream tree at `pinned`:
 
 ```bash
 git -C "$work/<name>" checkout --quiet "<pinned>" -- "<path>"
-diff -ru "$work/<name>/<path>" "<local>"
+diff -ru -x .git "$work/<name>/<path>" "<local>"
 ```
 
-Anything this prints is an edit the owner made. Say so clearly. If it prints
-nothing, say "no local edits" and the merge is a plain copy.
+**`-x .git` is not optional.** The clone keeps its own `.git` directory and the
+local copy never has one, because this repo strips it when vendoring. Without
+`-x .git` every entry reports `Only in ...: .git` and looks edited.
+
+Two further differences are vendoring artefacts, not edits:
+
+- A `LICENSE` this repo copied in when the upstream licence sits outside
+  `path`. It exists locally and not under the upstream subtree.
+- Anything the entry's `notes` field records as deliberately removed.
+
+Sort what the diff prints into artefacts and real edits, and say which is
+which. If only artefacts remain, say "no local edits" and the merge is a plain
+copy.
 
 ### 6. Propose the merge
 
@@ -1946,7 +1967,9 @@ When the owner points at a repo and asks for one skill out of it:
 5. Remove any nested `.git`.
 6. Copy the upstream `LICENSE` into the skill directory when one exists.
 7. Add an entry to `sources.yaml` with the current head commit.
-8. Run `bash scripts/install.sh` so the new skill goes live.
+8. Show the owner exactly which files landed and what the new entry says.
+   **Stop here. Wait for a yes** before you install or commit.
+9. Run `bash scripts/install.sh` so the new skill goes live.
 9. Run `bash scripts/tests/run.sh` and `bash scripts/check-secrets.sh`.
 10. Commit.
 
