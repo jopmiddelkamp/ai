@@ -15,7 +15,7 @@
 - Repo root: `/Users/jopmiddelkamp/Projects/prive/ai`. Every path below is relative to it.
 - Target platform: macOS. Use BSD-compatible flags only. Do not use GNU-only options such as `readlink -f`, `sed -i` without an argument, or `grep -P`.
 - Target shell: bash 3.2. Do not use `declare -A`, `${var,,}`, or `mapfile`.
-- Every script starts with `#!/usr/bin/env bash` and `set -euo pipefail`. Two exceptions use `set -uo pipefail`, because a non-matching `grep` must not abort a scan: `scripts/check-secrets.sh` and `scripts/check-drift.sh`. Each says so in a comment.
+- Every script starts with `#!/usr/bin/env bash` and `set -euo pipefail`. Three exceptions use `set -uo pipefail`: `scripts/check-secrets.sh` and `scripts/check-drift.sh`, because a non-matching `grep` must not abort a scan; and everything under `scripts/tests/`, because a failing check must not abort the rest of a test file. Each says so in a comment.
 - Every script accepts `--dry-run` and changes nothing when it is given.
 - Every script honours `CLAUDE_DIR` (default `$HOME/.claude`) and `CLAUDE_JSON` (default `$HOME/.claude.json`) so tests can point at a temp directory.
 - No secret, token, key, or password may ever be written into a tracked file. Use a `${VAR}` placeholder.
