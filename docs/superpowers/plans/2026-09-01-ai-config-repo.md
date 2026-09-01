@@ -426,16 +426,26 @@ assert_file "$found/skills/bro/SKILL.md" "the backup keeps the old file under it
 rm -rf "$home"
 
 # --- case 5: a basename collision across namespaces keeps both backups ---
+# install.sh only visits destinations that exist in ITS OWN repo, so the
+# collision needs a repo whose output-styles/ and commands/ share a basename.
+# This repo has no such pair, so build a throwaway one and run the same script
+# from inside it. REPO_ROOT is derived from the script's own location, so a
+# copy placed in <fake>/scripts/ treats <fake> as the repo.
+fake_repo=$(mktemp -d "${TMPDIR:-/tmp}/aicfgrepo.XXXXXX")
+mkdir -p "$fake_repo/scripts" "$fake_repo/skills" "$fake_repo/output-styles" "$fake_repo/commands"
+cp "$script" "$fake_repo/scripts/install.sh"
+printf 'repo-style\n' >"$fake_repo/output-styles/dup.md"
+printf 'repo-command\n' >"$fake_repo/commands/dup.md"
+
 home=$(make_fake_home)
-mkdir -p "$home/.claude/output-styles" "$home/.claude/commands"
-printf 'old-style\n' >"$home/.claude/output-styles/eli5.md"
-printf 'old-command\n' >"$home/.claude/commands/eli5.md"
-CLAUDE_DIR="$home/.claude" bash "$script" --force >/dev/null 2>&1
-assert_rc 0 $? "--force succeeds with a colliding basename"
+printf 'old-style\n' >"$home/.claude/output-styles/dup.md"
+printf 'old-command\n' >"$home/.claude/commands/dup.md"
+CLAUDE_DIR="$home/.claude" bash "$fake_repo/scripts/install.sh" --force >/dev/null 2>&1
+assert_rc 0 $? "--force succeeds when two namespaces share a basename"
 found=$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d | head -1)
-assert_eq "old-style" "$(cat "$found/output-styles/eli5.md" 2>/dev/null)" "the output style backup survives"
-assert_eq "old-command" "$(cat "$found/commands/eli5.md" 2>/dev/null)" "the command backup survives too"
-rm -rf "$home"
+assert_eq "old-style" "$(cat "$found/output-styles/dup.md" 2>/dev/null)" "the output-styles backup survives"
+assert_eq "old-command" "$(cat "$found/commands/dup.md" 2>/dev/null)" "the commands backup survives too"
+rm -rf "$home" "$fake_repo"
 
 # --- case 6: --dry-run changes nothing ---
 home=$(make_fake_home)
