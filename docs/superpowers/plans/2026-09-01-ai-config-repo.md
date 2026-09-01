@@ -2049,7 +2049,17 @@ Report three groups:
 
 ### 3. Check each source of truth
 
-For each server, open the "Where to check" link with WebFetch.
+Read the server's "Where to check" line first. Only three of the seven are
+URLs. The rest name a local repo or an app, and WebFetch cannot open those.
+
+- **The line is a URL:** fetch it with WebFetch.
+- **The line names a local repo,** as gbrain and trello do: run
+  `git -C <repo> log -1 --oneline` and `git -C <repo> status -sb`, and report
+  whether the checkout is behind its remote.
+- **The line names an app,** as pencil does: run `ls -l <path>` on the command
+  and report whether it still exists.
+
+Then, by transport:
 
 - **http servers:** confirm the URL, the transport, and the auth header shape.
 - **stdio servers:** confirm the command path still exists on disk with
@@ -2073,7 +2083,11 @@ bash scripts/check-secrets.sh
 bash scripts/apply-mcp.sh --dry-run
 ```
 
-All three must pass. Then, with approval:
+`jq empty` and `check-secrets.sh` must exit 0. `apply-mcp.sh --dry-run` always
+exits 0 even when a variable is missing, so read its output rather than its exit
+code: every variable must print `set`, and none may print `MISSING`.
+
+Then, with approval:
 
 ```bash
 bash scripts/apply-mcp.sh
@@ -2094,15 +2108,20 @@ git commit -m "chore: refresh MCP server definitions"
 3. Add a section to `mcp/README.md` and a row to the variables table.
 4. Tell the user which line to add to `~/.claude/mcp.env`. Never write that
    file for them when it holds a token they have not given you.
-5. Run `bash scripts/apply-mcp.sh --dry-run`, then apply.
+5. Show the exact edits you made to both files.
+   **Stop here. Wait for a yes.**
+6. Run `bash scripts/apply-mcp.sh --dry-run`, then apply.
 
 ## Removing a server
 
 1. Delete the entry from `mcp/servers.json` and the section from
    `mcp/README.md`.
-2. Run `bash scripts/apply-mcp.sh`. The script replaces the whole `mcpServers`
-   key, so the server disappears from the machine.
-3. Tell the user they may delete the now-unused line from `~/.claude/mcp.env`.
+2. Show what you deleted, and say plainly that applying will remove the server
+   from the machine. `apply-mcp.sh` replaces the whole `mcpServers` key rather
+   than merging into it, so this is not reversible from the repo alone.
+   **Stop here. Wait for a yes.**
+3. Run `bash scripts/apply-mcp.sh`.
+4. Tell the user they may delete the now-unused line from `~/.claude/mcp.env`.
 
 ## Keeping this skill current
 
@@ -2182,9 +2201,24 @@ for sub in skills output-styles commands; do
 done
 ```
 
-Anything that is a real file or directory, and not a symlink, is untracked.
-For each one, read its frontmatter and show the user its `name` and
-`description`.
+A path is **tracked** when either of these is true:
+
+- it is a symlink pointing into this repo, or
+- its relative path appears in `~/.claude/.ai-repo-manifest`.
+
+The second case matters: `install.sh --copy` writes real files rather than
+links, and those are owned even though they are not symlinks. Check the
+manifest before you call anything untracked:
+
+```bash
+grep -qxF "skills/<name>" ~/.claude/.ai-repo-manifest && echo tracked
+```
+
+`check-drift.sh` from step 1 already applies both rules, so when its "untracked
+content" section and this loop disagree, believe `check-drift.sh`.
+
+For each genuinely untracked item, read its frontmatter and show the user its
+`name` and `description`.
 
 ### 3. Find untracked MCP servers
 
@@ -2230,12 +2264,19 @@ or `commands/`. Use a lowercase file name.
 
 **An MCP server:**
 
+Read the entry with its secrets masked. **Never print the raw object.** It
+holds live tokens, and printing one copies it into this conversation's stored
+transcript:
+
 ```bash
-jq '.mcpServers["<name>"]' ~/.claude.json
+jq '.mcpServers["<name>"]' ~/.claude.json \
+  | sed -E 's/("(Authorization|[A-Z_]*TOKEN|[A-Z_]*KEY|[A-Z_]*SECRET)": *")[^"]*/\1<REDACTED>/'
 ```
 
-Copy the shape into `mcp/servers.json`. Replace every token, key, and
-machine-specific path with a `${VAR}` placeholder. Add a section to
+That shows you the shape, which is all you need. Copy the shape into
+`mcp/servers.json` and replace every masked value, and every machine-specific
+path, with a `${VAR}` placeholder. If you need to know a real value, do not
+read it: ask the owner to put it into `~/.claude/mcp.env` themselves. Add a section to
 `mcp/README.md` and a row to its variables table. Tell the user the exact line
 to add to `~/.claude/mcp.env`.
 
@@ -2245,14 +2286,29 @@ files already there, and add a row to `integrations/README.md`.
 ### 7. Install and verify
 
 ```bash
-bash scripts/install.sh --dry-run
-bash scripts/install.sh
+bash scripts/install.sh --dry-run --force
+bash scripts/install.sh --force
 bash scripts/tests/run.sh
-bash scripts/check-secrets.sh
 bash scripts/check-drift.sh
+git add -A
+bash scripts/check-secrets.sh --staged
 ```
 
-Every command must pass. `check-drift.sh` must end with `in sync`.
+**`--force` is required here, and leaving it off breaks the whole run.** The
+item you just captured still sits on the machine as a real file or directory,
+not a link. Without `--force`, `install.sh` refuses to replace it and exits 1
+from inside its loop, so every later skill, style and command is left
+uninstalled too. With `--force` it moves the original into
+`~/.claude/.backup-<timestamp>/` first, so nothing is lost.
+
+Read the `--dry-run --force` output before the real run and confirm every
+`backup` line names a path you meant to capture.
+
+`check-secrets.sh` runs after `git add` and with `--staged` on purpose. Its
+default mode scans only files git already tracks, so a freshly copied file
+would not be scanned at all.
+
+`check-drift.sh` must end with `in sync`.
 
 ### 8. Commit
 
