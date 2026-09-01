@@ -3,6 +3,9 @@
 # Secrets come from an env file that git never sees.
 set -euo pipefail
 
+# Everything this script writes can hold a credential.
+umask 077
+
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 CLAUDE_JSON="${CLAUDE_JSON:-$HOME/.claude.json}"
@@ -96,7 +99,14 @@ trap 'rm -f "$tmp"' EXIT
 jq --argjson servers "$rendered" '.mcpServers = $servers' "$CLAUDE_JSON" >"$tmp"
 jq empty "$tmp" 2>/dev/null || { printf 'apply-mcp.sh: refusing to write invalid JSON.\n' >&2; exit 1; }
 
-cp "$CLAUDE_JSON" "$CLAUDE_JSON.backup-$(date +%Y%m%d-%H%M%S)"
+# This file holds live bearer tokens. A plain redirect creates the temp file at
+# 0644 under the default umask, and the mv then carries that mode onto the
+# target, quietly making every token world-readable. Pin the mode explicitly on
+# both the replacement and the backup.
+backup="$CLAUDE_JSON.backup-$(date +%Y%m%d-%H%M%S)"
+cp "$CLAUDE_JSON" "$backup"
+chmod 600 "$backup"
+chmod 600 "$tmp"
 mv "$tmp" "$CLAUDE_JSON"
 
 printf 'wrote %s servers to %s\n' "$(printf '%s' "$rendered" | jq -r 'length')" "$CLAUDE_JSON"

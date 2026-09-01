@@ -50,10 +50,12 @@ interactive session, or in the claude.ai connector settings.
 
 | File | What it does | In repo |
 |---|---|---|
-| `statusline-command.sh` | status line styled after the robbyrussell zsh theme | no, referenced in `settings/README.md` |
-| `shell-init.sh` | loads `.zshrc` and `.zprofile` into the bash tool | no, referenced in `settings/README.md` |
+| `statusline-command.sh` | status line styled after the robbyrussell zsh theme | yes, copy in `settings/machine/` |
+| `shell-init.sh` | loads `.zshrc` and `.zprofile` into the bash tool | yes, copy in `settings/machine/` |
 
-Both are small and machine-specific. They stay where they are.
+No script installs these two. `settings/claude-settings.json` points at them by
+absolute path, so a rebuild copies them from `settings/machine/` into
+`~/.claude/` by hand and runs `chmod +x` on the status line.
 
 ## Hooks
 

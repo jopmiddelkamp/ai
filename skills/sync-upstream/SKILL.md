@@ -117,7 +117,15 @@ cp -R "$work/<name>/<path>" "<local>"
 rm -rf "<local>/.git"
 ```
 
-Then re-apply any local edit the owner chose to keep.
+Then put back everything step 7 wiped:
+
+1. **Re-apply any local edit** the owner chose to keep.
+2. **Restore the artefacts step 5 listed.** `rm -rf "<local>"` removed the whole
+   directory, so a `LICENSE` this repo copied in from outside `path` is gone.
+   Copy it back. This is not optional: `sources.yaml` records a licence for
+   every entry, and losing the file breaks that claim on the very first refresh.
+
+Then confirm the directory holds what you expect before you continue.
 
 ### 8. Update the manifest
 

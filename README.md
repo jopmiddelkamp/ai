@@ -9,17 +9,29 @@ machine is a copy of it.
 git clone git@github.com:jopmiddelkamp/ai.git ~/Projects/prive/ai
 cd ~/Projects/prive/ai
 
-git config core.hooksPath .githooks      # turn on the secret guard
-bash scripts/install.sh --dry-run        # see the plan
-bash scripts/install.sh                  # link skills, styles, commands
+# 1. Turn on the secret guard.
+git config core.hooksPath .githooks
 
-cp mcp/README.md /dev/null               # read it, then create the env file
-bash scripts/apply-mcp.sh --dry-run      # see which secrets are missing
-bash scripts/apply-mcp.sh                # write the MCP servers
+# 2. See what installing would do. On a machine that already has real files in
+#    ~/.claude, this prints "blocked" lines and exits 1. That is expected.
+bash scripts/install.sh --dry-run
+
+# 3. Install. Add --force when step 2 reported blocked paths: it moves each
+#    original into ~/.claude/.backup-<timestamp>/ before replacing it.
+bash scripts/install.sh --force
+
+# 4. Create the secrets file. Git never sees it.
+touch ~/.claude/mcp.env
+chmod 600 ~/.claude/mcp.env
+
+# 5. Fill it in, then check and apply.
+bash scripts/apply-mcp.sh --dry-run
+bash scripts/apply-mcp.sh
 ```
 
-Fill `~/.claude/mcp.env` with the real tokens. The table in
-[mcp/README.md](mcp/README.md) says where to get each one.
+**Step 5 needs you to edit `~/.claude/mcp.env` by hand first.** The table in
+[mcp/README.md](mcp/README.md) says where each of the six values comes from.
+`--dry-run` prints `MISSING` for anything you have not filled in yet.
 
 ## Daily use
 
@@ -36,7 +48,7 @@ Fill `~/.claude/mcp.env` with the real tokens. The table in
 bash scripts/install.sh      # link this repo into ~/.claude
 bash scripts/apply-mcp.sh    # write the MCP servers into ~/.claude.json
 bash scripts/check-drift.sh  # what differs between repo and machine
-bash scripts/check-secrets.sh# is anything leaking
+bash scripts/check-secrets.sh  # is anything leaking
 bash scripts/tests/run.sh    # run every test
 ```
 

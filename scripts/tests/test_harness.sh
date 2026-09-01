@@ -16,4 +16,13 @@ ln -s "$home/.claude.json" "$home/link"
 assert_symlink_to "$home/link" "$home/.claude.json" "assert_symlink_to follows a link"
 
 rm -rf "$home"
+
+# The failure path must actually fail. Every other test file's pass/fail
+# accounting rests on this, and until now it was verified only by reading.
+# finish calls exit, so run the pair inside a subshell and capture its status.
+( assert_eq a b "deliberate failure" >/dev/null 2>&1; finish ) >/dev/null 2>&1
+assert_eq "1" "$?" "finish exits 1 after a failed check"
+( assert_eq a a "deliberate pass" >/dev/null 2>&1; finish ) >/dev/null 2>&1
+assert_eq "0" "$?" "finish exits 0 when every check passed"
+
 finish

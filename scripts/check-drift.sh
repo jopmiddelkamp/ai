@@ -93,6 +93,10 @@ EOF
     printf '%s\n' "$live_keys" | grep -qxF "$k" || continue
     for field in type url command; do
       rv=$(jq -r --arg k "$k" --arg f "$field" '.[$k][$f] // "-"' "$TEMPLATE")
+      # A field holding a ${VAR} cannot be compared. The machine has the
+      # rendered value and the repo has the placeholder, so they always differ
+      # and a correct machine would report permanent false drift.
+      case "$rv" in *'${'*) continue ;; esac
       lv=$(jq -r --arg k "$k" --arg f "$field" '.mcpServers[$k][$f] // "-"' "$CLAUDE_JSON")
       [ "$rv" = "$lv" ] || note "$k: $field differs (repo: $rv, machine: $lv)"
     done

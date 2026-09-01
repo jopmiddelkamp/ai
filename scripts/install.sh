@@ -93,6 +93,14 @@ install_one() {
     mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
     mv "$dest" "$BACKUP_DIR/$rel"
   elif [ "$action" = "replace" ]; then
+    # A manifest-owned path is not always a symlink. `--copy` writes real files,
+    # and a hand edit leaves real content behind. Deleting that outright loses
+    # work while the script reports success, so back it up first. Only a symlink
+    # is safe to remove without a copy: the content lives in the repo.
+    if [ ! -L "$dest" ] && [ -e "$dest" ]; then
+      mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
+      cp -R "$dest" "$BACKUP_DIR/$rel"
+    fi
     rm -rf "$dest"
   fi
 
@@ -132,6 +140,11 @@ if [ -n "$OWNED" ]; then
     if [ "$DRY_RUN" -eq 1 ]; then
       printf '%-8s %s\n' "prune" "$rel"
     else
+      # Same rule as above: never delete real content without a copy.
+      if [ ! -L "${CLAUDE_DIR:?}/$rel" ] && [ -e "${CLAUDE_DIR:?}/$rel" ]; then
+        mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
+        cp -R "${CLAUDE_DIR:?}/$rel" "$BACKUP_DIR/$rel"
+      fi
       rm -rf "${CLAUDE_DIR:?}/$rel"
       printf '%-8s %s\n' "prune" "$rel"
     fi

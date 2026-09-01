@@ -18,10 +18,19 @@ HIGH_SIGNAL="$HIGH_SIGNAL"'|A(KIA|SIA)[0-9A-Z]{16}'
 HIGH_SIGNAL="$HIGH_SIGNAL"'|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}'
 HIGH_SIGNAL="$HIGH_SIGNAL"'|-----BEGIN [A-Z ]*PRIVATE KEY-----'
 
+# A credential introduced by name. This is the rule that catches what the other
+# two structurally cannot: a 64-character hexadecimal Trello token, which the
+# generic rule skips as a git hash, and an AWS secret key containing / or +,
+# which the generic character class excludes. Requiring a secret-shaped
+# identifier immediately before the separator is what stops it matching every
+# long path in the repo.
+NAMED='(secret|token|passwd|password|api[_-]?key|access[_-]?key|apikey)["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9/+=_.-]{16,}'
+
 # A long opaque run. Pure lowercase hexadecimal is skipped, because that is a
 # git hash. The character class deliberately excludes / + and =: a POSIX path
 # such as /Users/someone/Projects/prive/ai/scripts is over 40 characters and
-# would otherwise be reported on nearly every line of this repo.
+# would otherwise be reported on nearly every line of this repo. The NAMED rule
+# above covers the credentials this exclusion would otherwise miss.
 GENERIC_MIN=40
 
 usage() {
@@ -95,6 +104,14 @@ scan_file() {
     HITS=$((HITS + 1))
   done <<EOF
 $(grep -nE "$HIGH_SIGNAL" "$src" 2>/dev/null | cut -d: -f1 | sort -un)
+EOF
+
+  while IFS= read -r ln; do
+    [ -n "$ln" ] || continue
+    report "$label" "$ln"
+    HITS=$((HITS + 1))
+  done <<EOF
+$(grep -niE "$NAMED" "$src" 2>/dev/null | cut -d: -f1 | sort -un)
 EOF
 
   while IFS= read -r pair; do
