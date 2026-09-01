@@ -1,0 +1,46 @@
+{
+  "pencil": {
+    "type": "stdio",
+    "command": "/Applications/Pencil.app/Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-arm64",
+    "args": ["--app", "desktop"],
+    "env": {}
+  },
+  "moneybird-middelkamp-development": {
+    "type": "http",
+    "url": "https://moneybird.com/mcp/v1/read_write",
+    "headers": {
+      "Authorization": "Bearer ${MONEYBIRD_MIDDELKAMP_DEVELOPMENT_TOKEN}"
+    }
+  },
+  "moneybird-holding-42": {
+    "type": "http",
+    "url": "https://moneybird.com/mcp/v1/read_write",
+    "headers": {
+      "Authorization": "Bearer ${MONEYBIRD_HOLDING_42_TOKEN}"
+    }
+  },
+  "trello": {
+    "type": "stdio",
+    "command": "node",
+    "args": ["${TRELLO_MCP_PATH}"],
+    "env": {
+      "TRELLO_API_KEY": "${TRELLO_API_KEY}",
+      "TRELLO_TOKEN": "${TRELLO_TOKEN}"
+    }
+  },
+  "vercel-private": {
+    "type": "http",
+    "url": "https://mcp.vercel.com"
+  },
+  "gbrain": {
+    "type": "http",
+    "url": "https://hosted-gbrain-production.up.railway.app/mcp",
+    "headers": {
+      "Authorization": "Bearer ${GBRAIN_TOKEN}"
+    }
+  },
+  "wispr-flow": {
+    "type": "http",
+    "url": "https://api.wisprflow.ai/connect/mcp"
+  }
+}
