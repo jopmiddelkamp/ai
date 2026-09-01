@@ -433,7 +433,29 @@ assert_no_file "$home/.claude/skills/bro" "--dry-run creates no link"
 assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest"
 rm -rf "$home"
 
-# --- case 6: --copy writes real files, and is safe to repeat ---
+# --- case 6: --dry-run reports every blocked path and exits 1 ---
+home=$(make_fake_home)
+mkdir -p "$home/.claude/skills/bro"
+printf 'mine\n' >"$home/.claude/skills/bro/SKILL.md"
+out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run 2>&1)
+rc=$?
+assert_rc 1 $rc "--dry-run exits 1 when a path is blocked"
+assert_contains "$out" "blocked" "--dry-run reports the block"
+assert_contains "$out" "skills/bro" "--dry-run names the blocked path"
+assert_contains "$out" "commands/bro.md" "--dry-run keeps going past the block"
+assert_eq "mine" "$(cat "$home/.claude/skills/bro/SKILL.md")" "--dry-run leaves the real file alone"
+assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest when blocked"
+
+# --- case 7: --dry-run --force previews the backup and still changes nothing ---
+out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run --force 2>&1)
+rc=$?
+assert_rc 0 $rc "--dry-run --force exits 0"
+assert_contains "$out" "backup" "--dry-run --force previews the backup"
+assert_eq "mine" "$(cat "$home/.claude/skills/bro/SKILL.md")" "--dry-run --force changes nothing"
+assert_eq "" "$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d)" "--dry-run --force creates no backup directory"
+rm -rf "$home"
+
+# --- case 8: --copy writes real files, and is safe to repeat ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy succeeds"
@@ -447,7 +469,7 @@ CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy is safe to repeat"
 rm -rf "$home"
 
-# --- case 7: a bad option exits 2 ---
+# --- case 9: a bad option exits 2 ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --nope >/dev/null 2>&1
 assert_rc 2 $? "an unknown option exits 2"
@@ -479,13 +501,16 @@ DRY_RUN=0
 FORCE=0
 COPY=0
 CHANGED=0
+BLOCKED=0
 NEW_MANIFEST=""
 
 usage() {
   cat <<'USAGE'
 Usage: install.sh [--dry-run] [--force] [--copy]
 
-  --dry-run  Print the plan. Change nothing.
+  --dry-run  Print the plan. Change nothing. Reports every path this script
+             does not own as "blocked" and exits 1, so you see the whole
+             picture before you decide on --force.
   --force    Replace a file this script does not own. Back it up first.
   --copy     Write copies instead of symlinks. Use only if links break.
 
@@ -529,6 +554,12 @@ install_one() {
     action="replace"
   elif [ -e "$dest" ]; then
     if [ "$FORCE" -eq 0 ]; then
+      BLOCKED=$((BLOCKED + 1))
+      printf '%-8s %s (exists, not owned by this repo)\n' "blocked" "$rel"
+      # A dry run reports every blocked path and keeps going. Stopping at the
+      # first one would hide the rest of the plan, which is the whole point of
+      # a dry run. The exit code at the end still says a real run would fail.
+      if [ "$DRY_RUN" -eq 1 ]; then return 0; fi
       printf 'install.sh: %s exists and this script does not own it.\n' "$dest" >&2
       printf 'install.sh: run again with --force to back it up and replace it.\n' >&2
       exit 1
@@ -599,6 +630,11 @@ if [ "$DRY_RUN" -eq 0 ]; then
 fi
 
 printf '%s changed\n' "$CHANGED"
+
+if [ "$BLOCKED" -gt 0 ]; then
+  printf '%s blocked; re-run with --force to back them up and replace them\n' "$BLOCKED" >&2
+  exit 1
+fi
 ```
 
 - [ ] **Step 4: Make it executable and run the test**
@@ -610,22 +646,45 @@ bash scripts/tests/test_install.sh
 
 Expected: PASS.
 
-- [ ] **Step 5: Run the script for real, first as a dry run**
+- [ ] **Step 5: See why the live machine needs --force**
 
-Run: `bash scripts/install.sh --dry-run`
-Expected: it lists `backup` for the five skills, the output style, and the command, because the real files already sit in `~/.claude`.
+Run: `bash scripts/install.sh --dry-run; printf 'exit: %s\n' "$?"`
 
-- [ ] **Step 6: Apply it**
+Expected: seven `blocked` lines, one for each of the five skills, the output
+style, and the command, then `7 blocked; re-run with --force ...` and
+`exit: 1`. Those seven paths are real files today, so the script refuses to
+replace them without permission. Nothing on disk changes.
+
+If any path you cannot account for appears, STOP and report it.
+
+- [ ] **Step 6: Preview the real run**
+
+Run: `bash scripts/install.sh --dry-run --force; printf 'exit: %s\n' "$?"`
+
+Expected: seven `backup` lines, then `7 changed` and `exit: 0`. This is exactly
+what Step 7 will do. Still nothing on disk changes: check with
+`ls -la ~/.claude/skills` that no symlink exists yet.
+
+- [ ] **Step 7: Apply it**
 
 Run: `bash scripts/install.sh --force`
-Expected: every path is installed. A backup directory appears under `~/.claude/`.
 
-- [ ] **Step 7: Verify the live links**
+Expected: seven `backup` lines and `7 changed`. A directory named
+`~/.claude/.backup-<timestamp>/` now holds the seven original items.
 
-Run: `ls -la ~/.claude/skills ~/.claude/output-styles ~/.claude/commands`
-Expected: each entry is a symlink into `/Users/jopmiddelkamp/Projects/prive/ai`.
+- [ ] **Step 8: Verify the live links and the backup**
 
-- [ ] **Step 8: Commit**
+```bash
+ls -la ~/.claude/skills ~/.claude/output-styles ~/.claude/commands
+ls -1 ~/.claude/.backup-*/
+cat ~/.claude/.ai-repo-manifest
+```
+
+Expected: every entry under the three directories is a symlink into
+`/Users/jopmiddelkamp/Projects/prive/ai`; the backup directory holds the seven
+originals; the manifest lists seven sorted paths.
+
+- [ ] **Step 9: Commit**
 
 ```bash
 git add scripts/install.sh scripts/tests/test_install.sh
