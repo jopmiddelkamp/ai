@@ -1176,7 +1176,16 @@ assert_rc 0 $? "a long hyphenated name is allowed"
 out=$(bash "$script" "$tmp/openai.txt" 2>&1)
 assert_contains "$out" "openai.txt" "the report names the file"
 
-# The whole repo must be clean.
+# The path: entries must stay, or the guard cannot commit its own tests.
+for pth in scripts/tests/test_check_secrets.sh docs/superpowers/plans/2026-09-01-ai-config-repo.md; do
+  if grep -qxF "path:$pth" "$repo/scripts/secret-allowlist.txt"; then
+    _pass "$pth is path-allowlisted"
+  else
+    _fail "$pth is path-allowlisted" "entry missing from scripts/secret-allowlist.txt"
+  fi
+done
+
+# The whole repo must be clean. This only passes because path: works.
 bash "$script" >/dev/null 2>&1
 assert_rc 0 $? "the tracked repo holds no credential"
 
@@ -1241,6 +1250,16 @@ allowed() {
   grep -qxF "$1" "$ALLOWLIST"
 }
 
+# A "path:" line in the allowlist skips a whole tracked file, matched on its
+# repo-relative path. Two files here hold fake credentials as their own
+# content: this guard's test fixtures, and the plan document those fixtures
+# were copied from. Without this, the guard could never pass its own
+# repo-wide scan, and its pre-commit hook could never commit its own tests.
+path_allowed() {
+  [ -f "$ALLOWLIST" ] || return 1
+  grep -qxF "path:$1" "$ALLOWLIST"
+}
+
 report() { printf '%s:%s: possible credential\n' "$1" "$2" >&2; }
 
 HITS=0
@@ -1271,8 +1290,13 @@ scan_file() {
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   case "$MODE" in
-    args) scan_file "$f" ;;
-    *) scan_file "$REPO_ROOT/$f" ;;
+    args)
+      scan_file "$f"
+      ;;
+    *)
+      path_allowed "$f" && continue
+      scan_file "$REPO_ROOT/$f"
+      ;;
   esac
 done <<EOF
 $FILES
@@ -1296,7 +1320,18 @@ Create `scripts/secret-allowlist.txt`:
 ```
 # One exact string per line. check-secrets.sh ignores these.
 # Add a line only after you confirm the string is not a credential.
+#
+# A line beginning with "path:" skips a whole tracked file, matched on its
+# repo-relative path. Use it only for a file whose own content is fake
+# credentials by design. Never use it to silence a real leak.
+path:scripts/tests/test_check_secrets.sh
+path:docs/superpowers/plans/2026-09-01-ai-config-repo.md
 ```
+
+The two `path:` entries are load-bearing, not convenience. `test_check_secrets.sh`
+holds realistic fake keys because that is what it tests, and the plan document
+quotes that same code. Without the entries the guard flags its own test file,
+so the hook would refuse the very commit that installs the guard.
 
 - [ ] **Step 5: Make it executable and run the test**
 
@@ -1305,7 +1340,15 @@ chmod +x scripts/check-secrets.sh
 bash scripts/tests/test_check_secrets.sh
 ```
 
-Expected: PASS. If "the tracked repo holds no credential" fails, read the reported file and replace the value with a `${VAR}` placeholder.
+Expected: PASS.
+
+If "the tracked repo holds no credential" fails, read the file and line it
+names. A real credential means STOP and report it, naming the file and line
+but never the value. A false positive gets an exact-string line in
+`scripts/secret-allowlist.txt`. Never weaken a pattern, never raise the
+threshold, and never edit the plan document to make the scan pass — the briefs
+are generated from it, so redacting a fixture there silently breaks the test on
+the next regeneration.
 
 - [ ] **Step 6: Write the commit hook**
 
