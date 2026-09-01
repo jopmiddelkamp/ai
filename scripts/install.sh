@@ -40,6 +40,20 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+# Refuse to install into the repo itself. If CLAUDE_DIR resolves inside
+# REPO_ROOT then a destination can equal its own source, and two things go
+# wrong at once: `rm -rf "$dest"` would delete the source, and `ln -s src dest`
+# onto an existing directory silently creates a nested self-link inside it
+# rather than failing. This has happened once, from a mistyped test.
+CANON_CLAUDE_DIR=$(cd "$CLAUDE_DIR" 2>/dev/null && pwd || printf '%s' "$CLAUDE_DIR")
+case "$CANON_CLAUDE_DIR" in
+  "$REPO_ROOT"|"$REPO_ROOT"/*)
+    printf 'install.sh: CLAUDE_DIR (%s) is inside the repo (%s).\n' "$CANON_CLAUDE_DIR" "$REPO_ROOT" >&2
+    printf 'install.sh: that would make a destination its own source. Refusing.\n' >&2
+    exit 2
+    ;;
+esac
+
 OWNED=""
 [ -f "$MANIFEST" ] && OWNED=$(cat "$MANIFEST")
 

@@ -109,7 +109,13 @@ CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy is safe to repeat"
 rm -rf "$home"
 
-# --- case 10: a bad option exits 2 ---
+# --- case 10: refuse to install into the repo itself ---
+out=$(CLAUDE_DIR="$repo" bash "$script" --dry-run 2>&1)
+assert_rc 2 $? "CLAUDE_DIR inside the repo exits 2"
+assert_contains "$out" "inside the repo" "the error says why"
+assert_eq "" "$(find "$repo/skills" -type l 2>/dev/null)" "no self-link was created in the repo"
+
+# --- case 11: a bad option exits 2 ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --nope >/dev/null 2>&1
 assert_rc 2 $? "an unknown option exits 2"
