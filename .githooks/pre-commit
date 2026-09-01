@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Block a commit that carries a credential.
+set -uo pipefail
+repo=$(git rev-parse --show-toplevel)
+bash "$repo/scripts/check-secrets.sh" --staged || {
+  printf '\nCommit blocked. Fix the file, or use "git commit --no-verify" if you are certain.\n' >&2
+  exit 1
+}
