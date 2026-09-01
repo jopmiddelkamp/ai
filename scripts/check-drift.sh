@@ -23,13 +23,28 @@ printf 'machine: %s\n\n' "$CLAUDE_DIR"
 
 # 1. Everything the repo holds must be installed and point back here.
 printf 'installed content\n'
+# A destination can be three things: absent, a symlink, or real content left by
+# a --copy install or a hand edit. The third case used to fall through both
+# branches and report nothing, so a skill directory replaced by a real one of
+# the same name read as "in sync". Compare its content instead.
+check_installed() { # <absolute source in repo> <path relative to CLAUDE_DIR>
+  src="$1"
+  rel="$2"
+  dest="$CLAUDE_DIR/$rel"
+  if [ ! -e "$dest" ]; then
+    note "missing: $rel"
+  elif [ -L "$dest" ]; then
+    [ "$(readlink "$dest")" = "$src" ] || note "wrong target: $rel"
+  elif diff -r -q "$src" "$dest" >/dev/null 2>&1; then
+    :   # a --copy install whose content still matches the repo
+  else
+    note "content differs: $rel"
+  fi
+}
+
 for d in "$REPO_ROOT"/skills/*/; do
   [ -d "$d" ] || continue
-  rel="skills/$(basename "${d%/}")"
-  dest="$CLAUDE_DIR/$rel"
-  if [ ! -e "$dest" ]; then note "missing: $rel"
-  elif [ -L "$dest" ] && [ "$(readlink "$dest")" != "${d%/}" ]; then note "wrong target: $rel"
-  fi
+  check_installed "${d%/}" "skills/$(basename "${d%/}")"
 done
 for f in "$REPO_ROOT"/output-styles/*.md "$REPO_ROOT"/commands/*.md; do
   [ -f "$f" ] || continue
@@ -37,10 +52,7 @@ for f in "$REPO_ROOT"/output-styles/*.md "$REPO_ROOT"/commands/*.md; do
     */output-styles/*) rel="output-styles/$(basename "$f")" ;;
     *) rel="commands/$(basename "$f")" ;;
   esac
-  dest="$CLAUDE_DIR/$rel"
-  if [ ! -e "$dest" ]; then note "missing: $rel"
-  elif [ -L "$dest" ] && [ "$(readlink "$dest")" != "$f" ]; then note "wrong target: $rel"
-  fi
+  check_installed "$f" "$rel"
 done
 
 # 2. Content on the machine that the repo does not track.
@@ -72,6 +84,20 @@ EOF
     printf '%s\n' "$repo_keys" | grep -qxF "$k" || note "not in repo: $k"
   done <<EOF
 $live_keys
+EOF
+
+  # A server can be present on both sides and still have drifted. Compare the
+  # three fields that never hold a secret, so this stays safe to print.
+  while IFS= read -r k; do
+    [ -n "$k" ] || continue
+    printf '%s\n' "$live_keys" | grep -qxF "$k" || continue
+    for field in type url command; do
+      rv=$(jq -r --arg k "$k" --arg f "$field" '.[$k][$f] // "-"' "$TEMPLATE")
+      lv=$(jq -r --arg k "$k" --arg f "$field" '.mcpServers[$k][$f] // "-"' "$CLAUDE_JSON")
+      [ "$rv" = "$lv" ] || note "$k: $field differs (repo: $rv, machine: $lv)"
+    done
+  done <<EOF
+$repo_keys
 EOF
 else
   note "cannot compare MCP servers: jq, the template, or $CLAUDE_JSON is missing"

@@ -43,5 +43,34 @@ rc=$?
 assert_rc 1 $rc "a missing MCP server is drift"
 assert_contains "$out" "gbrain" "the report names the missing server"
 
+# Reinstall to a clean, in-sync baseline before testing content mismatches.
+CLAUDE_DIR="$home/.claude" bash "$install" >/dev/null 2>&1
+CLAUDE_JSON="$home/.claude.json" MCP_ENV_FILE="$good_env" bash "$apply" >/dev/null 2>&1
+CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" >/dev/null 2>&1
+assert_rc 0 $? "a reinstalled machine is back in sync"
+
+# Replace an installed symlink with a real file whose content differs.
+rm -f "$home/.claude/commands/bro.md"
+printf 'not the real content\n' >"$home/.claude/commands/bro.md"
+out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
+rc=$?
+assert_rc 1 $rc "a symlink replaced by different content is drift"
+assert_contains "$out" "content differs" "the report calls out the content difference"
+
+# Replace it again with a real copy whose content matches the repo -- the
+# legitimate --copy case. This must not be reported as drift.
+rm -f "$home/.claude/commands/bro.md"
+cp "$repo/commands/bro.md" "$home/.claude/commands/bro.md"
+CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" >/dev/null 2>&1
+assert_rc 0 $? "a --copy install with matching content is not drift"
+
+# Change one server's url on the machine while everything else stays in sync.
+jq '.mcpServers.gbrain.url = "https://example.invalid/mcp"' "$home/.claude.json" >"$home/x" && mv "$home/x" "$home/.claude.json"
+out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
+rc=$?
+assert_rc 1 $rc "a changed server url is drift"
+assert_contains "$out" "gbrain" "the report names the server with the changed field"
+assert_contains "$out" "url" "the report names the changed field"
+
 rm -rf "$home" "$good_env"
 finish
