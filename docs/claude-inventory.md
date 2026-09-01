@@ -62,7 +62,7 @@ Every hook belongs to another app. See `hooks/README.md`.
 | Owner | Script | Events |
 |---|---|---|
 | Pulser | `~/.pulser/hooks/pulser-hook.sh` | 7 |
-| Pixel Agents | `~/.pixel-agents/hooks/claude-hook.js` | 10 |
+| Pixel Agents | `~/.pixel-agents/hooks/claude-hook.js` | 12 |
 
 ## Plugins
 

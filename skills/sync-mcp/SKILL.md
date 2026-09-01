@@ -40,7 +40,17 @@ Report three groups:
 
 ### 3. Check each source of truth
 
-For each server, open the "Where to check" link with WebFetch.
+Read the server's "Where to check" line first. Only three of the seven are
+URLs. The rest name a local repo or an app, and WebFetch cannot open those.
+
+- **The line is a URL:** fetch it with WebFetch.
+- **The line names a local repo,** as gbrain and trello do: run
+  `git -C <repo> log -1 --oneline` and `git -C <repo> status -sb`, and report
+  whether the checkout is behind its remote.
+- **The line names an app,** as pencil does: run `ls -l <path>` on the command
+  and report whether it still exists.
+
+Then, by transport:
 
 - **http servers:** confirm the URL, the transport, and the auth header shape.
 - **stdio servers:** confirm the command path still exists on disk with
@@ -64,7 +74,11 @@ bash scripts/check-secrets.sh
 bash scripts/apply-mcp.sh --dry-run
 ```
 
-All three must pass. Then, with approval:
+`jq empty` and `check-secrets.sh` must exit 0. `apply-mcp.sh --dry-run` always
+exits 0 even when a variable is missing, so read its output rather than its exit
+code: every variable must print `set`, and none may print `MISSING`.
+
+Then, with approval:
 
 ```bash
 bash scripts/apply-mcp.sh
@@ -85,15 +99,20 @@ git commit -m "chore: refresh MCP server definitions"
 3. Add a section to `mcp/README.md` and a row to the variables table.
 4. Tell the user which line to add to `~/.claude/mcp.env`. Never write that
    file for them when it holds a token they have not given you.
-5. Run `bash scripts/apply-mcp.sh --dry-run`, then apply.
+5. Show the exact edits you made to both files.
+   **Stop here. Wait for a yes.**
+6. Run `bash scripts/apply-mcp.sh --dry-run`, then apply.
 
 ## Removing a server
 
 1. Delete the entry from `mcp/servers.json` and the section from
    `mcp/README.md`.
-2. Run `bash scripts/apply-mcp.sh`. The script replaces the whole `mcpServers`
-   key, so the server disappears from the machine.
-3. Tell the user they may delete the now-unused line from `~/.claude/mcp.env`.
+2. Show what you deleted, and say plainly that applying will remove the server
+   from the machine. `apply-mcp.sh` replaces the whole `mcpServers` key rather
+   than merging into it, so this is not reversible from the repo alone.
+   **Stop here. Wait for a yes.**
+3. Run `bash scripts/apply-mcp.sh`.
+4. Tell the user they may delete the now-unused line from `~/.claude/mcp.env`.
 
 ## Keeping this skill current
 

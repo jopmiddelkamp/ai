@@ -18,7 +18,7 @@ one is, what it changes, and how to get it back on a new machine.
 
 ## Deliberately not tracked
 
-**Pixel Agents** installs ten Claude Code hooks from `~/.pixel-agents/hooks/`.
+**Pixel Agents** installs twelve Claude Code hooks from `~/.pixel-agents/hooks/`.
 The owner chose not to track it. **Pencil** installs an MCP server from inside
 its app bundle; its server entry stays in `mcp/servers.json`, but it has no note
 here, also by choice.
