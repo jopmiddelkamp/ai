@@ -51,7 +51,29 @@ assert_no_file "$home/.claude/skills/bro" "--dry-run creates no link"
 assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest"
 rm -rf "$home"
 
-# --- case 6: --copy writes real files, and is safe to repeat ---
+# --- case 6: --dry-run reports every blocked path and exits 1 ---
+home=$(make_fake_home)
+mkdir -p "$home/.claude/skills/bro"
+printf 'mine\n' >"$home/.claude/skills/bro/SKILL.md"
+out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run 2>&1)
+rc=$?
+assert_rc 1 $rc "--dry-run exits 1 when a path is blocked"
+assert_contains "$out" "blocked" "--dry-run reports the block"
+assert_contains "$out" "skills/bro" "--dry-run names the blocked path"
+assert_contains "$out" "commands/bro.md" "--dry-run keeps going past the block"
+assert_eq "mine" "$(cat "$home/.claude/skills/bro/SKILL.md")" "--dry-run leaves the real file alone"
+assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest when blocked"
+
+# --- case 7: --dry-run --force previews the backup and still changes nothing ---
+out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run --force 2>&1)
+rc=$?
+assert_rc 0 $rc "--dry-run --force exits 0"
+assert_contains "$out" "backup" "--dry-run --force previews the backup"
+assert_eq "mine" "$(cat "$home/.claude/skills/bro/SKILL.md")" "--dry-run --force changes nothing"
+assert_eq "" "$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d)" "--dry-run --force creates no backup directory"
+rm -rf "$home"
+
+# --- case 8: --copy writes real files, and is safe to repeat ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy succeeds"
@@ -65,7 +87,7 @@ CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy is safe to repeat"
 rm -rf "$home"
 
-# --- case 7: a bad option exits 2 ---
+# --- case 9: a bad option exits 2 ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --nope >/dev/null 2>&1
 assert_rc 2 $? "an unknown option exits 2"
