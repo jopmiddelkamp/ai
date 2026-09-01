@@ -86,8 +86,12 @@ install_one() {
   fi
 
   if [ "$action" = "backup" ]; then
-    mkdir -p "$BACKUP_DIR"
-    mv "$dest" "$BACKUP_DIR/"
+    # Keep the namespace in the backup path. A flat backup would let
+    # output-styles/x.md and commands/x.md collide, and `mv` overwrites
+    # silently, so one original would be lost while the script reported
+    # success.
+    mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
+    mv "$dest" "$BACKUP_DIR/$rel"
   elif [ "$action" = "replace" ]; then
     rm -rf "$dest"
   fi
