@@ -13,6 +13,7 @@ own system.
 |---|---|---|
 | `skills/` | one directory per skill | `SKILL.md`, YAML frontmatter with `name` and `description`, then markdown instructions |
 | `output-styles/` | one file per style | YAML frontmatter with `name`, `description`, `keep-coding-instructions`, then the style rules |
+| `memory/` | the global user memory | plain markdown, no frontmatter; installs as `~/.claude/CLAUDE.md` |
 | `commands/` | one file per slash command | YAML frontmatter with `description`, then the command instructions |
 | `hooks/` | event scripts | plain executables; empty today |
 | `mcp/` | MCP server definitions | `servers.json`, a template with `${VAR}` placeholders |
@@ -22,9 +23,10 @@ own system.
 ## For Claude Code
 
 ```bash
-bash scripts/install.sh     # symlink skills, styles, and commands into ~/.claude
+bash scripts/install.sh     # symlink skills, styles, commands, and memory into ~/.claude
 bash scripts/apply-mcp.sh   # render mcp/servers.json into ~/.claude.json
 bash scripts/check-drift.sh # report differences
+bash scripts/web-prefs.sh   # copy the claude.ai preferences text to the clipboard
 ```
 
 ## For another agent

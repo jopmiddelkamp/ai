@@ -50,7 +50,21 @@ bash scripts/apply-mcp.sh    # write the MCP servers into ~/.claude.json
 bash scripts/check-drift.sh  # what differs between repo and machine
 bash scripts/check-secrets.sh  # is anything leaking
 bash scripts/tests/run.sh    # run every test
+bash scripts/web-prefs.sh    # copy my claude.ai preferences text
 ```
+
+## Claude web
+
+claude.ai cannot read files and has no API for preferences. Sync is one paste:
+
+```bash
+bash scripts/web-prefs.sh
+```
+
+It joins [memory/CLAUDE.md](memory/CLAUDE.md) and the body of
+[output-styles/eli5.md](output-styles/eli5.md), and copies the text to the
+clipboard. Paste it into claude.ai → Settings → Profile → Preferences. Repeat
+after every change to either file.
 
 ## What is here
 
@@ -58,6 +72,7 @@ bash scripts/tests/run.sh    # run every test
 |---|---|
 | [skills/](skills/) | 8 skills |
 | [output-styles/](output-styles/) | the ELI5-readable style |
+| [memory/](memory/) | the always-on rules, linked to `~/.claude/CLAUDE.md` |
 | [commands/](commands/) | the `/bro` command |
 | [mcp/](mcp/) | 7 MCP servers, no secrets |
 | [integrations/](integrations/) | notes on 8 third-party tools |

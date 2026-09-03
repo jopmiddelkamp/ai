@@ -145,6 +145,12 @@ for f in "$REPO_ROOT"/commands/*.md; do
   install_one "$f" "commands/$(basename "$f")"
 done
 
+# The global user memory: one file at the root of CLAUDE_DIR. Claude Code
+# loads it in every session, no matter which output style is active.
+if [ -f "$REPO_ROOT/memory/CLAUDE.md" ]; then
+  install_one "$REPO_ROOT/memory/CLAUDE.md" "CLAUDE.md"
+fi
+
 # Remove anything we own that the repo no longer has.
 if [ -n "$OWNED" ]; then
   while IFS= read -r rel; do

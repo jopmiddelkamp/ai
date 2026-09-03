@@ -54,6 +54,9 @@ for f in "$REPO_ROOT"/output-styles/*.md "$REPO_ROOT"/commands/*.md; do
   esac
   check_installed "$f" "$rel"
 done
+if [ -f "$REPO_ROOT/memory/CLAUDE.md" ]; then
+  check_installed "$REPO_ROOT/memory/CLAUDE.md" "CLAUDE.md"
+fi
 
 # 2. Content on the machine that the repo does not track.
 printf '\nuntracked content\n'
@@ -67,6 +70,10 @@ for sub in skills output-styles commands; do
     if [ ! -e "$REPO_ROOT/$rel" ]; then note "not in repo: $rel"; fi
   done
 done
+# The root-level CLAUDE.md sits outside the three subdirectories.
+if [ -e "$CLAUDE_DIR/CLAUDE.md" ] && [ ! -e "$REPO_ROOT/memory/CLAUDE.md" ]; then
+  note "not in repo: CLAUDE.md"
+fi
 
 # 3. MCP servers.
 printf '\nMCP servers\n'

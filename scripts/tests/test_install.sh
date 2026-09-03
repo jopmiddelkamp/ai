@@ -13,6 +13,7 @@ assert_rc 0 $? "install succeeds on an empty home"
 assert_symlink_to "$home/.claude/skills/bro" "$repo/skills/bro" "skills/bro is linked"
 assert_symlink_to "$home/.claude/output-styles/eli5.md" "$repo/output-styles/eli5.md" "the output style is linked"
 assert_symlink_to "$home/.claude/commands/bro.md" "$repo/commands/bro.md" "the command is linked"
+assert_symlink_to "$home/.claude/CLAUDE.md" "$repo/memory/CLAUDE.md" "the global CLAUDE.md is linked"
 assert_file "$home/.claude/.ai-repo-manifest" "the manifest is written"
 if grep -qx 'skills/bro' "$home/.claude/.ai-repo-manifest"; then
   _pass "the manifest lists skills/bro"
