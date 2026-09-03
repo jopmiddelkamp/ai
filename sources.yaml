@@ -18,6 +18,16 @@
 #   notes      free text
 
 sources:
+  - name: business-coach
+    kind: skill
+    local: skills/business-coach
+    repo: https://github.com/jopmiddelkamp/ai-business-coach
+    path: skills/business-coach
+    ref: master
+    pinned: 3cf7d89cb242e7ecf2e9310b8e603b1ede3f0eda
+    pinned_at: 2026-05-18
+    license: Apache-2.0
+    notes: My own repo. The upstream also holds 21 slash commands, not copied here.
   - name: humanizer
     kind: skill
     local: skills/humanizer

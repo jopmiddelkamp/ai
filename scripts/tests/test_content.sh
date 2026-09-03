@@ -6,7 +6,7 @@ set -uo pipefail
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 
 for s in bro github-pr-comment review-pr skill-sync-reminder humanizer \
-         sync-upstream sync-mcp config-capture; do
+         sync-upstream sync-mcp config-capture business-coach; do
   assert_file "$repo/skills/$s/SKILL.md" "skills/$s/SKILL.md exists"
   assert_eq "---" "$(head -1 "$repo/skills/$s/SKILL.md" 2>/dev/null)" "skills/$s/SKILL.md opens with frontmatter"
   if grep -qE '^name:[[:space:]]*'"$s"'[[:space:]]*$' "$repo/skills/$s/SKILL.md" 2>/dev/null; then
