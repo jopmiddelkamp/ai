@@ -70,7 +70,7 @@ after every change to either file.
 
 | Folder | What |
 |---|---|
-| [skills/](skills/) | 9 skills |
+| [skills/](skills/) | 10 skills |
 | [output-styles/](output-styles/) | the ELI5-readable style |
 | [memory/](memory/) | the always-on rules, linked to `~/.claude/CLAUDE.md` |
 | [commands/](commands/) | the `/bro` command |
