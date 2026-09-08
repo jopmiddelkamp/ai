@@ -51,6 +51,7 @@ bash scripts/check-drift.sh  # what differs between repo and machine
 bash scripts/check-secrets.sh  # is anything leaking
 bash scripts/tests/run.sh    # run every test
 bash scripts/web-prefs.sh    # copy my claude.ai preferences text
+bash scripts/web-skills.sh   # zip my skills for claude.ai upload
 ```
 
 ## Claude web
@@ -65,6 +66,18 @@ It joins [memory/CLAUDE.md](memory/CLAUDE.md) and the body of
 [output-styles/eli5.md](output-styles/eli5.md), and copies the text to the
 clipboard. Paste it into claude.ai → Settings → Profile → Preferences. Repeat
 after every change to either file.
+
+Skills need one drag each. claude.ai has no API for profile skills; the
+`/v1/skills` API writes to API workspaces, not to the claude.ai account.
+
+```bash
+bash scripts/web-skills.sh              # every skill
+bash scripts/web-skills.sh review-pr    # only these
+```
+
+It writes one zip per skill into `tmp/web-skills/`, with the skill folder at
+the zip root. Upload each zip in claude.ai → Settings → Capabilities → Skills,
+replacing the old version.
 
 ## What is here
 
