@@ -1,97 +1,112 @@
 ---
-name: github-pr-comment
-description: Write GitHub PR comments and review-thread replies in the user's house style: compact, direct English for a non-native team, merge-intent labels (blocking/suggestion/none), optional Mermaid diagrams. Use when writing any PR comment or reply.
+name: pull-request-comment-style
+description: Use when writing or replying to a GitHub pull request comment, review comment, or review summary, or when a review flow needs findings posted to a PR. Triggers on "PR comment", "review comment", "reply in the thread", "post this on the PR".
 ---
 
-# GitHub PR Comment Writer
+# Pull request comment style
 
-Write a GitHub PR comment or a reply to an existing PR review thread, in the user's communication style.
+## Overview
 
-The user typically uses Claude for advice or analysis first, then at the end asks for a PR comment that captures the conclusion. The preceding conversation is the source material — use it.
+A PR comment gives the author one decision in one glance: what is wrong, why it matters, what to change. The reader is a developer whose first language is not English. The source material is the conversation so far. The comment carries the conclusion, never the debate.
 
-## Step 1: Read the style guide
+## Shape
 
-ALWAYS read `references/style-guide.md` before writing. It is the authoritative definition of tone, structure, label usage, and Mermaid rules. Do not write from memory of it — load it fresh each time.
+A comment has these parts, in this order, and nothing else.
 
-## Step 2: Decide what is being written
+| Part | Content | Size |
+|---|---|---|
+| 0, reply only | One sentence that answers the last message in the thread | 1 sentence |
+| 1 | The problem, stated as a fact about the code | 1 sentence |
+| 2 | Why it matters for the reader, the user, or the code. Cite at most one source: a rule file, a doc line, or one earlier thread | 1 or 2 sentences |
+| 3 | The fix, or the one question you need answered | 1 or 2 sentences, or 1 code block of at most 10 lines |
+| 4 | The merge decision line, when the section below requires one | 1 sentence |
 
-Two cases:
+Limits: at most 20 words per sentence. At most 100 words of prose per issue, part 4 excluded. At most one code block per issue. No list longer than 5 items. A blank line separates the parts.
 
-- **New comment** — the user wants to raise a point on a PR (a review comment on a line, or a general PR comment). No existing thread to answer.
-- **Reply** — the user is responding inside an existing PR review conversation. There is a prior comment (often pasted in, or discussed earlier). A reply should briefly connect to what was already said before adding the new point.
+Several issues: one comment, one numbered bold title per issue, parts 1 to 4 under each title, each with its own merge decision. That title is the only bold in a comment. No headings.
 
-If it is genuinely unclear which one, ask one short question. Otherwise infer it and continue.
+## Merge decision
 
-## Step 3: Pull the content from the conversation
+A comment blocks the merge by default. The reader never has to guess whether an unmarked comment is serious.
 
-Use the full discussion as context. The user has already worked through the reasoning with Claude — the comment must reflect that conclusion, not restate the whole debate. Extract:
+Three cases:
 
-- the single issue or point the comment is about
-- why it matters (the reasoning from the discussion)
-- the concrete fix or question that came out of it
+- **It blocks the merge.** Inside a batched review, write no part 4. The review body carries the convention line. In a standalone reply, part 4 is: `This blocks the merge.`
+- **It does not block the merge.** Part 4 is: `This is just a suggestion. If you disagree, resolve this comment yourself.`
+- **It is a question, an answer, context, or agreement.** No part 4. A question ends with a question mark and asks for one thing.
 
-**One issue** — write a single, plain comment.
+Write part 4 word for word, every time. The same words carry the same decision, so the reader learns them once.
 
-**Multiple issues** — write one comment with a clear section per issue. Do not ask the user to split it, and do not blend unrelated points into one paragraph. Apply all the rules of this skill to *each* section independently: each section gets its own problem → why → fix structure, and its own merge-intent decision (one section can be `blocking:`, another `suggestion:`, another unlabelled). Give each section a short bold header so the reader can act on them one by one. Keep the sections compact — the per-issue rule still holds, the sections just live in one comment.
-
-## Step 4: Decide merge intent (label)
-
-Per the style guide:
-
-- `blocking:` — only if the PR should not merge before this is fixed.
-- `suggestion:` — useful improvement, not required before merge.
-- **no label** — normal discussion, agreement, context, praise, or a plain question.
-
-Do not add a label just to add structure. When in doubt between `blocking:` and no label, consider how the discussion framed it — was this a real defect, or a preference? If the user already signalled severity in the conversation, follow that.
-
-## Step 5: Write the comment
-
-Follow `references/style-guide.md` exactly. Key points:
-
-- Simple, direct English. Short sentences. No idioms, sarcasm, rhetorical questions, or emotional wording.
-- Structure: problem → why it matters → suggested fix. Skip "why it matters" only when it is obvious.
-- Focus on the code, not the person.
-- For a reply: open with one short line connecting to the existing thread, then the new point.
-- Add a Mermaid diagram only if it genuinely makes a flow clearer (state transitions, async flows, error/retry paths, architecture boundaries) — never when one sentence is enough. Precede any diagram with one sentence explaining what it shows.
-
-## Step 6: Output
-
-Output the comment as plain text inside a single Markdown code block, so the user can copy it directly into GitHub. Use a ```text fence (or ```markdown if the comment itself contains a Mermaid block, so the fences do not collide).
-
-Do not add commentary before or after the block unless the user asked a question that needs answering, or you need to flag a decision you made (e.g. "I treated this as `blocking:` because the discussion framed it as a domain-layer leak — change to `suggestion:` if you disagree"). Keep any such note to one or two lines.
-
-## Quick reference: comment shape
-
-Single issue:
+**The convention line.** A batched review body opens with this line, before anything else:
 
 ```text
-[optional: one line connecting to existing thread, for replies]
-
-[optional label: ] <problem>
-
-<why it matters>
-
-<suggested fix or direct question>
+Comments here block the merge unless the comment says it is a suggestion.
 ```
 
-Multiple issues — one comment, one section each:
+That line is what makes silence readable. A standalone reply has no review body, so it states its own decision in part 4.
+
+When the conversation already settled the severity, use that severity.
+
+## Language
+
+- Active voice, present tense: "the method throws", not "an exception is thrown".
+- One idea per sentence. Small words. Expand an abbreviation the first time you use it.
+- The same word for the same thing every time.
+- Name the code, not the person: "the guard", not "your guard".
+- Straight quotes. No emoji. No em dash or en dash: use a period, a comma, or a colon.
+- A question mark only on a question you want answered.
+
+Words and shapes that stay out of a comment:
+
+- thanks, great, nice catch, you are right, feel free, let me know, hope this helps
+- note that, worth noting, keep in mind, in order to, actually, additionally
+- crucial, robust, leverage, streamline, seamless, ensure, comprehensive, align, enhance
+- "not just X but Y", "not only X but also Y", a group of three for effect, a trailing "-ing" clause that explains the sentence before it
+- a closing line that sums up or cheers, such as "This makes the code more robust."
+
+This list comes from the humanizer skill. When a pattern slips into a draft, apply that skill to the draft.
+
+## Mermaid
+
+Add a diagram only for a flow: state changes, async paths, retry paths, or boundaries between layers. One caption sentence goes before it. When one sentence explains the flow, write the sentence.
+
+## Output
+
+- Comment text for the user to paste: one ```text block, or one ```markdown block when the comment holds a Mermaid block. Outside the block, at most one line, and only to flag a choice you made, such as the merge decision.
+- Comment text you post yourself with gh or the API: the raw text, no fence.
+
+## Example
+
+A finding: the guard throws `ClientProtocolException`, only the Soroban methods document it, five other methods throw it too, the CHANGELOG lists them.
 
 ```text
-[optional: one line connecting to existing thread, for replies]
+`HandleResponse` now throws `ClientProtocolException`, but only the `StellarRpcServer` methods document it.
 
-**1. <short issue title>**
+`Server.RootAsync`, `RequestBuilder<T>.Execute`, `Link.Follow`, `FederationServer.ResolveAddress`, and `TransferServerService` throw it too. The CHANGELOG lists them, so the release notes and the XML docs disagree.
 
-[optional label: ] <problem>
+Add the `<exception cref="ClientProtocolException">` block to those methods.
 
-<why it matters>
-
-<suggested fix or direct question>
-
-**2. <short issue title>**
-
-[optional label: ] <problem>
-
-<why it matters>
-
-<suggested fix or direct question>
+This is just a suggestion. If you disagree, resolve this comment yourself.
 ```
+
+A reply, after the author says the README update comes in a later PR:
+
+```text
+The README change belongs in this PR.
+
+`http-networking.mdc` line 28 requires both files in the same change, and no follow-up PR exists yet.
+
+Add the README paragraph here, about 4 lines. If you open the follow-up PR before this one merges and link it, I drop the requirement.
+
+This blocks the merge.
+```
+
+## Final check
+
+Confirm each line before you output:
+
+1. Part 4 matches the merge decision, and it is word for word.
+2. Parts 1 to 3 are in order. The fix is the last part before part 4.
+3. No sentence has more than 20 words.
+4. The prose per issue is 100 words or fewer.
+5. No em dash, en dash, emoji, or word from the list above.

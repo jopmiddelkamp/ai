@@ -7,7 +7,7 @@ What was custom on this machine on 2026-09-01, and where each item now lives.
 | Name | Source | In repo |
 |---|---|---|
 | `bro` | own | yes, `skills/bro` |
-| `github-pr-comment` | own | yes, `skills/github-pr-comment` |
+| `pull-request-comment-style` | own | yes, `skills/pull-request-comment-style` |
 | `review-pr` | own | yes, `skills/review-pr` |
 | `skill-sync-reminder` | own | yes, `skills/skill-sync-reminder` |
 | `humanizer` | `blader/humanizer`, v2.9.1 | yes, `skills/humanizer`, listed in `sources.yaml` |

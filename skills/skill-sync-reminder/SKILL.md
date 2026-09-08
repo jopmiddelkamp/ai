@@ -19,7 +19,7 @@ The user runs the same custom skills in two places: claude.ai (uploaded to the p
    Commit the downloaded files to beans-claude-config/skills/<name>/ — Claude Code picks the change up through the existing symlinks.
    ```
 
-4. If a changed skill references other skills (example: review-pr references code-review and github-pr-comment), add one line telling the user to verify those referenced skills exist on the Claude Code side.
+4. If a changed skill references other skills (example: review-pr references code-review and pull-request-comment-style), add one line telling the user to verify those referenced skills exist on the Claude Code side.
 
 ## When a skill changed in Claude Code or beans-claude-config
 
