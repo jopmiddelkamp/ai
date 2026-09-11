@@ -72,5 +72,15 @@ assert_rc 1 $rc "a changed server url is drift"
 assert_contains "$out" "gbrain" "the report names the server with the changed field"
 assert_contains "$out" "url" "the report names the changed field"
 
+# Take the plugin registry away. The plugin delivers skills, so its absence is
+# drift even when every link is in place.
+CLAUDE_DIR="$home/.claude" bash "$install" >/dev/null 2>&1
+CLAUDE_JSON="$home/.claude.json" MCP_ENV_FILE="$good_env" bash "$apply" >/dev/null 2>&1
+rm -f "$home/.claude/plugins/installed_plugins.json"
+out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
+rc=$?
+assert_rc 1 $rc "a missing plugin registry is drift"
+assert_contains "$out" "ai@ai" "the report names the plugin"
+
 rm -rf "$home" "$good_env"
 finish

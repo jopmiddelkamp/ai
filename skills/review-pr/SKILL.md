@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: "Context-first pull request review: gathers PR intent and standards, runs code-review, writes findings via pull-request-comment-style. Use for ANY PR review request, instead of code-review directly."
+description: "Use for ANY request to review a pull request, a PR number or URL, or the current branch before a PR is opened, instead of code-review directly. Triggers on 'review PR', 'review this pull request', 'is this mergeable', 'take a look at PR 42', 'code review my branch', 'check PR X against our rules'."
 ---
 
 # Review PR — Context-First Review Orchestrator

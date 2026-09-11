@@ -4,16 +4,21 @@ What was custom on this machine on 2026-09-01, and where each item now lives.
 
 ## Skills
 
+Claude Code loads these through the `ai@ai` plugin, which is this repo. They
+are not symlinked into `~/.claude/skills`.
+
 | Name | Source | In repo |
 |---|---|---|
 | `bro` | own | yes, `skills/bro` |
 | `pull-request-comment-style` | own | yes, `skills/pull-request-comment-style` |
 | `review-pr` | own | yes, `skills/review-pr` |
-| `skill-sync-reminder` | own | yes, `skills/skill-sync-reminder` |
-| `humanizer` | `blader/humanizer`, v2.9.1 | yes, `skills/humanizer`, listed in `sources.yaml` |
-| `sync-upstream` | own, new | yes |
-| `sync-mcp` | own, new | yes |
-| `config-capture` | own, new | yes |
+| `config-capture` | own | yes, `skills/config-capture` |
+| `research` | own | yes, `skills/research` |
+| `business-coach` | own | yes, `skills/business-coach` |
+
+Removed on 2026-09-10: `sync-upstream` and `sync-mcp` (nothing is copied from
+other repos any more; other people's skills are plugins) and
+`skill-sync-reminder` (replaced by `scripts/web-skills.sh`).
 
 ## Output styles
 
@@ -68,7 +73,8 @@ Every hook belongs to another app. See `hooks/README.md`.
 
 ## Plugins
 
-5 marketplaces, 17 enabled plugins. Listed in `settings/plugins.md`.
+7 marketplaces, 19 enabled plugins. Listed in `settings/plugins.md`. One of
+them, `ai@ai`, is this repo.
 
 ## Excluded on purpose
 

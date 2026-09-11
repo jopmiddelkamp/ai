@@ -6,8 +6,8 @@ version 1.40609.0 on 2026-09-01.
 
 ## How it touches the AI setup
 It is a separate store from Claude Code. Skills uploaded to the claude.ai
-profile do **not** sync with the skills in this repo. The `skill-sync-reminder`
-skill in this repo exists for exactly that reason.
+profile do **not** sync with the skills in this repo. After a skill changes,
+run `bash scripts/web-skills.sh <name>` and upload the zip by hand.
 
 `Claude Code URL Handler.app` in `~/Applications` handles `claude://` links. It
 comes with Claude Code.

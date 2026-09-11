@@ -1,6 +1,6 @@
 ---
 name: research
-description: "Adversarial, source-traced research. Traces every key claim back to a primary source, labels which side each source serves, and ends with a misinformation log that names the false claims and who spread them. Use this skill for ANY research request that depends on outside facts, and ALWAYS when the topic has organized opposing sides: wars, elections, contested history, genocide and atrocity claims, health and climate debates, corporate or political scandals, viral clips, 'is it true that', 'what really happened', 'both sides of', 'debunk this', 'fact-check this'. Trigger on '/research' and on 'research X'. Also trigger when the user's own question contains a claim that may be false, or when they repeat something they heard. Do not answer a contested factual question from memory or from one search: use this skill instead."
+description: "Use for ANY question that depends on outside facts, including a single current number such as a rate, a price, or a version, and ALWAYS when the topic has organized opposing sides: wars, elections, contested history, atrocity claims, health and climate debates, corporate or political scandals, viral clips. Triggers on '/research', 'research X', 'is it true that', 'what really happened', 'both sides of', 'debunk this', 'fact-check this', 'what is the current X', and on any claim the user heard from someone or repeats as fact. Never answer a contested or outside-world factual question from memory or from one search."
 ---
 
 # Research

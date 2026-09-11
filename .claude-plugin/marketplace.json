@@ -1,0 +1,13 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "ai",
+  "description": "Claude Code plugin with Jop Middelkamp's personal skills.",
+  "owner": { "name": "Jop Middelkamp", "url": "https://github.com/jopmiddelkamp" },
+  "plugins": [
+    {
+      "name": "ai",
+      "source": "./",
+      "description": "Personal skills: review-pr, pull-request-comment-style, research, business-coach, config-capture, bro."
+    }
+  ]
+}

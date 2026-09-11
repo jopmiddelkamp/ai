@@ -1,7 +1,6 @@
 ---
 name: bro
-description: "Re-explain the previous assistant message in a much simpler way — for when the reply made you go 'bro what'. Use /bro to get a plain-language version of the last answer."
-license: MIT
+description: "Use when the user signals that the previous assistant message did not land and wants it said simpler: '/bro', 'bro what', 'huh', 'I don't get it', 'say that simpler', 'explain like I'm five', 'in plain words', 'my brain is fried'. Only re-explains the last answer; not for a new question."
 ---
 
 # /bro — say it simpler
@@ -16,6 +15,6 @@ The user just typed `/bro`. Your last message didn't land — it was too dense, 
 2. **Simpler, not necessarily shorter.** If the idea needs space to be clear, take the space. The goal is "impossible to misunderstand", not "fewer words". Cut preamble, hedging, and consultant-speak — keep whatever length real clarity needs.
 3. **Facts survive verbatim.** Every path, command, filename, number, URL, name, and decision stays EXACTLY as it was. Simplify the explanation around the facts, never the facts themselves.
 4. **Light bro flavor.** Casual and direct ("basically...", "the point is...", "ok so..."). A touch of personality is welcome — don't turn it into a meme.
-5. **Same language.** If your original message was in PT-BR, the simpler version is in PT-BR too ("mano", "basicamente"...). English stays English.
+5. **Same language.** If your original message was in Dutch, the simpler version is in Dutch too ("oké dus", "het punt is"...). English stays English.
 6. **Flatten structure.** Drop headers and ceremony. Tables become plain sentences. Keep a short list only if the original genuinely had multiple parts.
 7. **Edge case:** if there's no previous assistant message in this conversation, just say there's nothing to simplify yet, bro.

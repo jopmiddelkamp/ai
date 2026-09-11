@@ -11,6 +11,7 @@ own system.
 
 | Folder | What it holds | Shape |
 |---|---|---|
+| `.claude-plugin/` | the plugin and marketplace manifests | `plugin.json` names the plugin `ai` and points it at `skills/`; `marketplace.json` makes the repo installable with `claude plugin marketplace add jopmiddelkamp/ai` |
 | `skills/` | one directory per skill | `SKILL.md`, YAML frontmatter with `name` and `description`, then markdown instructions |
 | `output-styles/` | one file per style | YAML frontmatter with `name`, `description`, `keep-coding-instructions`, then the style rules |
 | `memory/` | the global user memory | plain markdown, no frontmatter; installs as `~/.claude/CLAUDE.md` |
@@ -23,7 +24,9 @@ own system.
 ## For Claude Code
 
 ```bash
-bash scripts/install.sh     # symlink skills, styles, commands, and memory into ~/.claude
+claude plugin marketplace add jopmiddelkamp/ai
+claude plugin install ai@ai  # the plugin delivers skills/
+bash scripts/install.sh     # symlink styles, commands, and memory into ~/.claude
 bash scripts/apply-mcp.sh   # render mcp/servers.json into ~/.claude.json
 bash scripts/check-drift.sh # report differences
 bash scripts/web-prefs.sh   # copy the claude.ai preferences text to the clipboard
@@ -42,14 +45,12 @@ rules hold for every host:
 
 1. Run `bash scripts/tests/run.sh`. It must print `ALL TESTS PASSED`.
 2. Run `bash scripts/check-secrets.sh`. It must print `clean`.
-3. Content copied from another repo needs an entry in `sources.yaml`, and no
-   nested `.git` directory.
+3. Never copy a skill out of another repo. Install it as a plugin and list it
+   in `settings/plugins.md`.
 4. Use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`.
 
 ## The maintenance skills
 
 | Ask | Skill |
 |---|---|
-| "update the copied skills" | `sync-upstream` |
-| "check the MCP servers" | `sync-mcp` |
 | "capture what is not in the repo yet" | `config-capture` |

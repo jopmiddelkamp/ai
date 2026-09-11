@@ -1,6 +1,6 @@
 ---
 name: config-capture
-description: Pull new AI agent customizations from this machine into the repo. Use when the user adds a skill, output style, command, MCP server, or AI tool outside the repo and wants it stored, or says capture my config, import my settings, or what is not in the repo yet.
+description: Use when something was added to this machine outside the repo and must be stored in it, such as a skill made in a chat, an output style or slash command added in the app, an MCP server added with claude mcp add, or a new AI tool. Triggers on "capture my config", "import my settings", "get this skill into the repo", "store it in the repo", "what is not in the repo yet", "what is on this machine that the repo does not have".
 ---
 
 # Config Capture
@@ -16,7 +16,14 @@ server, a new AI tool. This skill moves that content into the repo.
 2. **Never write without approval.** List the findings first.
 3. **Never delete anything from the machine** except through
    `bash scripts/install.sh`, which replaces a real file with a link and keeps
-   a backup.
+   a backup. The one exception is a captured skill; see step 7.
+
+## How skills reach Claude Code
+
+Skills are not symlinked. The repo is a Claude Code plugin (`ai@ai`), and the
+plugin delivers `skills/`. So a skill that sits in `~/.claude/skills` is always
+untracked, even when a skill of the same name exists in the repo. Output
+styles, commands, and `CLAUDE.md` are still symlinks made by `install.sh`.
 
 ## Steps
 
@@ -41,7 +48,9 @@ for sub in skills output-styles commands; do
 done
 ```
 
-A path is **tracked** when either of these is true:
+Every entry under `~/.claude/skills` is untracked; the plugin loads the repo's
+skills from its own cache. A style or command is **tracked** when either of
+these is true:
 
 - it is a symlink pointing into this repo, or
 - its relative path appears in `~/.claude/.ai-repo-manifest`.
@@ -54,8 +63,8 @@ manifest before you call anything untracked:
 grep -qxF "skills/<name>" ~/.claude/.ai-repo-manifest && echo tracked
 ```
 
-`check-drift.sh` from step 1 already applies both rules, so when its "untracked
-content" section and this loop disagree, believe `check-drift.sh`.
+`check-drift.sh` from step 1 already applies both rules. Use the loop only to
+see the raw candidates. When the two disagree, believe `check-drift.sh`.
 
 For each genuinely untracked item, read its frontmatter and show the user its
 `name` and `description`.
@@ -95,9 +104,9 @@ cp -R "$HOME/.claude/skills/<name>" "skills/<name>"
 rm -rf "skills/<name>/.git"
 ```
 
-If it came from somebody else's repo, add an entry to `sources.yaml` with the
-upstream URL and the current head commit. Ask the user for the URL when you
-cannot find it.
+If it came from somebody else's repo, do not copy it. Install it as a plugin
+with `claude plugin marketplace add <owner>/<repo>` and add it to
+`settings/plugins.md` and `settings/claude-settings.json` instead.
 
 **An output style or a command:** copy the single file into `output-styles/`
 or `commands/`. Use a lowercase file name.
@@ -129,20 +138,36 @@ files already there, and add a row to `integrations/README.md`.
 bash scripts/install.sh --dry-run --force
 bash scripts/install.sh --force
 bash scripts/tests/run.sh
-bash scripts/check-drift.sh
 git add -A
 bash scripts/check-secrets.sh --staged
 ```
 
-**`--force` is required here, and leaving it off breaks the whole run.** The
-item you just captured still sits on the machine as a real file or directory,
-not a link. Without `--force`, `install.sh` refuses to replace it and exits 1
-from inside its loop, so every later skill, style and command is left
-uninstalled too. With `--force` it moves the original into
+**`--force` is required for a captured style or command.** The item still sits
+on the machine as a real file, not a link. Without `--force`, `install.sh`
+refuses to replace it and exits 1 from inside its loop, so every later style
+and command is left uninstalled too. With `--force` it moves the original into
 `~/.claude/.backup-<timestamp>/` first, so nothing is lost.
 
 Read the `--dry-run --force` output before the real run and confirm every
 `backup` line names a path you meant to capture.
+
+**A captured skill needs one more step.** `install.sh` does not touch
+`~/.claude/skills`. The repo copy goes live through the plugin after the commit
+in step 8 is pushed and the plugin is refreshed:
+
+```bash
+claude plugin marketplace update ai && claude plugin update ai@ai
+```
+
+Until then the machine copy keeps working. After the refresh, ask the user for
+a yes and then remove the machine copy, or the skill loads twice:
+
+```bash
+rm -rf ~/.claude/skills/<name>
+bash scripts/check-drift.sh
+```
+
+`check-drift.sh` must end with `in sync`.
 
 `check-secrets.sh` runs after `git add` and with `--staged` on purpose. Its
 default mode scans only files git already tracks, so a freshly copied file

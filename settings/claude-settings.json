@@ -7,14 +7,16 @@
   "effort": "max",
   "effortLevel": "max",
   "enabledPlugins": {
+    "ai@ai": true,
     "autofix-bot@claude-plugins-official": true,
-    "business-coach@business-coach": true,
     "claude-code-setup@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "elements-of-style@superpowers-marketplace": true,
     "frontend-design@claude-plugins-official": true,
+    "gflow@gflow": true,
     "gitkraken-hooks@gitkraken": true,
+    "humanizer@humanizer": true,
     "playwright@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
@@ -30,24 +32,40 @@
     "CLAUDE_ENV_FILE": "/Users/jopmiddelkamp/.claude/shell-init.sh"
   },
   "extraKnownMarketplaces": {
-    "business-coach": {
+    "ai": {
       "source": {
-        "path": "/Users/jopmiddelkamp/Projects/prive/ai-business-coach",
-        "source": "git",
-        "url": "https://github.com/jopmiddelkamp/ai-business-coach.git"
-      }
+        "repo": "jopmiddelkamp/ai",
+        "source": "github"
+      },
+      "autoUpdate": true
+    },
+    "gflow": {
+      "source": {
+        "repo": "jopmiddelkamp/gflow",
+        "source": "github"
+      },
+      "autoUpdate": true
     },
     "gitkraken": {
       "source": {
         "path": "/Users/jopmiddelkamp/.claude/plugins/marketplaces/gitkraken",
         "source": "directory"
-      }
+      },
+      "autoUpdate": true
+    },
+    "humanizer": {
+      "source": {
+        "repo": "blader/humanizer",
+        "source": "github"
+      },
+      "autoUpdate": true
     },
     "stellar-dev": {
       "source": {
         "repo": "stellar/stellar-dev-skill",
         "source": "github"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "hooks": {

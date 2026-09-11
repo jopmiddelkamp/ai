@@ -33,19 +33,8 @@ else
   _fail "found $count skills to check" "the skills directory is empty"
 fi
 
-# Every local: path in sources.yaml must point at something that exists.
-while IFS= read -r loc; do
-  [ -n "$loc" ] || continue
-  assert_file "$repo/$loc" "sources.yaml entry resolves: $loc"
-done <<EOF
-$(grep -E '^[[:space:]]+local:' "$repo/sources.yaml" 2>/dev/null | sed -E 's/^[[:space:]]*local:[[:space:]]*//')
-EOF
-
-# And humanizer, the one vendored skill today, must still be listed by name.
-if grep -q '^  - name: humanizer' "$repo/sources.yaml" 2>/dev/null; then
-  _pass "sources.yaml lists humanizer"
-else
-  _fail "sources.yaml lists humanizer" "entry not found"
-fi
+# Nothing is copied from other repos any more. Somebody else's skill is
+# installed as a plugin and listed in settings/plugins.md.
+assert_no_file "$repo/sources.yaml" "sources.yaml is gone"
 
 finish

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Link this repo's agent content into ~/.claude.
+# Link this repo's output styles, commands, and global memory into ~/.claude.
+# Skills are NOT linked: the repo is a Claude Code plugin, and the plugin
+# delivers skills/ (see .claude-plugin/plugin.json and settings/plugins.md).
 # The repo is the source of truth. This script never edits repo files.
 set -euo pipefail
 
@@ -127,12 +129,10 @@ install_one() {
   printf '%-8s %s\n' "$action" "$rel"
 }
 
-# Skills: one directory each.
-for d in "$REPO_ROOT"/skills/*/; do
-  [ -d "$d" ] || continue
-  name=$(basename "$d")
-  install_one "${d%/}" "skills/$name"
-done
+# Skills are deliberately absent here. Linking skills/ into ~/.claude/skills
+# while the plugin also loads them would register every skill twice. A manifest
+# from before the plugin still lists skills/<name>; the prune loop below removes
+# those links.
 
 # Output styles and commands: one file each.
 for f in "$REPO_ROOT"/output-styles/*.md; do

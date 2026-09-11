@@ -20,32 +20,51 @@ bash scripts/install.sh --dry-run
 #    original into ~/.claude/.backup-<timestamp>/ before replacing it.
 bash scripts/install.sh --force
 
-# 4. Create the secrets file. Git never sees it.
+# 4. Install the skills. This repo is a Claude Code plugin; the plugin
+#    delivers skills/. install.sh does not link them.
+claude plugin marketplace add jopmiddelkamp/ai
+claude plugin install ai@ai
+
+# 5. Create the secrets file. Git never sees it.
 touch ~/.claude/mcp.env
 chmod 600 ~/.claude/mcp.env
 
-# 5. Fill it in, then check and apply.
+# 6. Fill it in, then check and apply.
 bash scripts/apply-mcp.sh --dry-run
 bash scripts/apply-mcp.sh
 ```
 
-**Step 5 needs you to edit `~/.claude/mcp.env` by hand first.** The table in
+**Step 6 needs you to edit `~/.claude/mcp.env` by hand first.** The table in
 [mcp/README.md](mcp/README.md) says where each of the six values comes from.
 `--dry-run` prints `MISSING` for anything you have not filled in yet.
 
 ## Daily use
 
-| I want to | Say this to the agent |
+| I want to | Do this |
 |---|---|
-| refresh the skills I copied from other repos | "update the copied skills" |
-| check my MCP servers | "check the MCP servers" |
-| store something I added outside the repo | "capture what is not in the repo yet" |
-| take one skill from a repo I found | "take the X skill from <url>" |
+| store something I added outside the repo | say "capture what is not in the repo yet" |
+| use somebody else's skill | install it as a plugin and add it to [settings/plugins.md](settings/plugins.md) |
+| change a skill | edit `skills/<name>/SKILL.md`, commit, push, then see below |
+
+## Changing a skill
+
+Claude Code loads the skills from the plugin, not from this folder. The plugin
+is this repo on GitHub. So a skill change goes live in three steps:
+
+```bash
+git commit -am "feat: ..." && git push
+claude plugin marketplace update ai && claude plugin update ai@ai
+# then restart Claude Code
+```
+
+The marketplace has `autoUpdate` on, so a restart alone usually picks the
+change up too. Output styles, commands, and the memory file are symlinks, so
+those change live.
 
 ## Commands
 
 ```bash
-bash scripts/install.sh      # link this repo into ~/.claude
+bash scripts/install.sh      # link styles, commands, and memory into ~/.claude
 bash scripts/apply-mcp.sh    # write the MCP servers into ~/.claude.json
 bash scripts/check-drift.sh  # what differs between repo and machine
 bash scripts/check-secrets.sh  # is anything leaking
@@ -83,7 +102,8 @@ replacing the old version.
 
 | Folder | What |
 |---|---|
-| [skills/](skills/) | 10 skills |
+| [.claude-plugin/](.claude-plugin/) | the plugin and marketplace manifests; the plugin is named `ai` |
+| [skills/](skills/) | 6 skills, delivered by the plugin |
 | [output-styles/](output-styles/) | the ELI5-readable style |
 | [memory/](memory/) | the always-on rules, linked to `~/.claude/CLAUDE.md` |
 | [commands/](commands/) | the `/bro` command |
@@ -97,9 +117,7 @@ replacing the old version.
 ## Rules
 
 1. No secret ever enters this repo. Use `${VAR}` and `~/.claude/mcp.env`.
-2. Content copied from another repo gets an entry in
-   [sources.yaml](sources.yaml).
-3. Never fork a repo to take one skill from it. Copy the folder and record the
-   link.
+2. Never copy a skill out of somebody else's repo. Install it as a plugin and
+   list it in [settings/plugins.md](settings/plugins.md).
 
 [AGENTS.md](AGENTS.md) says the same thing for an agent.

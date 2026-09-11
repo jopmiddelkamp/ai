@@ -1,6 +1,6 @@
 ---
 name: pull-request-comment-style
-description: Use when writing or replying to a GitHub pull request comment, review comment, or review summary, or when a review flow needs findings posted to a PR. Triggers on "PR comment", "review comment", "reply in the thread", "post this on the PR".
+description: Use when writing or replying to a pull request comment, review comment, or review summary on GitHub, GitLab, Bitbucket, or Azure DevOps, or when a review flow needs findings posted to a PR. Triggers on "PR comment", "review comment", "reply in the thread", "post this on the PR", "draft a review summary", "write a nit".
 ---
 
 # Pull request comment style

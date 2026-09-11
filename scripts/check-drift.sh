@@ -42,10 +42,7 @@ check_installed() { # <absolute source in repo> <path relative to CLAUDE_DIR>
   fi
 }
 
-for d in "$REPO_ROOT"/skills/*/; do
-  [ -d "$d" ] || continue
-  check_installed "${d%/}" "skills/$(basename "${d%/}")"
-done
+# Skills are not linked; the plugin delivers them (section 5 below).
 for f in "$REPO_ROOT"/output-styles/*.md "$REPO_ROOT"/commands/*.md; do
   [ -f "$f" ] || continue
   case "$f" in
@@ -59,6 +56,8 @@ if [ -f "$REPO_ROOT/memory/CLAUDE.md" ]; then
 fi
 
 # 2. Content on the machine that the repo does not track.
+# Every entry in ~/.claude/skills counts, even one that matches a repo skill by
+# name: the plugin already loads that skill, so a second copy is drift.
 printf '\nuntracked content\n'
 for sub in skills output-styles commands; do
   [ -d "$CLAUDE_DIR/$sub" ] || continue
@@ -67,7 +66,11 @@ for sub in skills output-styles commands; do
     name=$(basename "$e")
     case "$name" in .*) continue ;; esac
     rel="$sub/$name"
-    if [ ! -e "$REPO_ROOT/$rel" ]; then note "not in repo: $rel"; fi
+    if [ "$sub" = "skills" ]; then
+      note "not in repo: $rel (skills come from the ai plugin; remove this copy)"
+    elif [ ! -e "$REPO_ROOT/$rel" ]; then
+      note "not in repo: $rel"
+    fi
   done
 done
 # The root-level CLAUDE.md sits outside the three subdirectories.
@@ -123,6 +126,17 @@ if [ -f "$MANIFEST" ]; then
   done <"$MANIFEST"
 else
   note "no manifest at $MANIFEST; run scripts/install.sh"
+fi
+
+# 5. The plugin that delivers skills/.
+printf '\nplugin\n'
+INSTALLED="$CLAUDE_DIR/plugins/installed_plugins.json"
+if command -v jq >/dev/null 2>&1 && [ -f "$INSTALLED" ]; then
+  if ! jq -e '.plugins["ai@ai"]' "$INSTALLED" >/dev/null 2>&1; then
+    note "plugin ai@ai is not installed; run: claude plugin marketplace add jopmiddelkamp/ai && claude plugin install ai@ai"
+  fi
+else
+  note "no plugin registry at $INSTALLED; run: claude plugin marketplace add jopmiddelkamp/ai && claude plugin install ai@ai"
 fi
 
 printf '\n'
