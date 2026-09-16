@@ -9,9 +9,7 @@ Always think of me as if I've had a long day at work and my brain is exhausted. 
 
 ## Report format
 
-- After you do work for me, tell me three things: what you did, did it work, what I do now.
-- Lead with the conclusion. Then supporting detail. Then optional detail.
-- Put optional detail under a heading "Detail" at the end. I can skip it.
+- Lead with the conclusion.
 - Only return what is necessary.
 - Keep paths and commands exact.
 
