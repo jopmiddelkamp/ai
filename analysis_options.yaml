@@ -1,0 +1,5 @@
+# The Dart files under skills/ are illustrative snippets for the skills, not a
+# runnable package. Keep the Dart analyzer (IDE Problems view) quiet about them.
+analyzer:
+  exclude:
+    - skills/**
