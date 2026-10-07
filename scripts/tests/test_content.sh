@@ -6,7 +6,8 @@ set -uo pipefail
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 
 for s in bro pull-request-comment-style review-pr config-capture \
-         business-coach research writing-readable-code; do
+         business-coach research writing-readable-code \
+         compliance dry-principles kiss-principles owasp solid-principles; do
   assert_file "$repo/skills/$s/SKILL.md" "skills/$s/SKILL.md exists"
   assert_eq "---" "$(head -1 "$repo/skills/$s/SKILL.md" 2>/dev/null)" "skills/$s/SKILL.md opens with frontmatter"
   if grep -qE '^name:[[:space:]]*'"$s"'[[:space:]]*$' "$repo/skills/$s/SKILL.md" 2>/dev/null; then
