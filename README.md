@@ -12,11 +12,11 @@ cd ~/Projects/prive/ai
 # 1. Turn on the secret guard.
 git config core.hooksPath .githooks
 
-# 2. See what installing would do. On a machine that already has real files in
-#    ~/.claude, this prints "blocked" lines and exits 1. That is expected.
+# 2. See what installing would do. On a machine that already has a real
+#    ~/.claude/CLAUDE.md, this prints "blocked" and exits 1. That is expected.
 bash scripts/install.sh --dry-run
 
-# 3. Install. Add --force when step 2 reported blocked paths: it moves each
+# 3. Install. Add --force when step 2 reported "blocked": it moves the
 #    original into ~/.claude/.backup-<timestamp>/ before replacing it.
 bash scripts/install.sh --force
 
@@ -43,7 +43,6 @@ bash scripts/apply-mcp.sh
 
 | I want to | Do this |
 |---|---|
-| store something I added outside the repo | say "capture what is not in the repo yet" |
 | use somebody else's skill | install it as a plugin and add it to [settings/plugins.md](settings/plugins.md) |
 | change a skill | edit `skills/<name>/SKILL.md`, commit, push, then see below |
 
@@ -60,13 +59,12 @@ claude plugin marketplace update ai && claude plugin update ai@ai
 ```
 
 The marketplace has `autoUpdate` on, so a restart alone usually picks the
-change up too. Commands and the memory file are symlinks, so those change
-live.
+change up too. The memory file is a symlink, so it changes live.
 
 ## Commands
 
 ```bash
-bash scripts/install.sh      # link commands and memory into ~/.claude
+bash scripts/install.sh      # link memory into ~/.claude
 bash scripts/apply-mcp.sh    # write the MCP servers into ~/.claude.json
 bash scripts/check-drift.sh  # what differs between repo and machine
 bash scripts/check-secrets.sh  # is anything leaking

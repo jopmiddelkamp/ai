@@ -9,7 +9,7 @@ assert_contains "hello world" "world" "assert_contains finds a substring"
 
 home=$(make_fake_home)
 assert_file "$home/.claude.json" "make_fake_home creates .claude.json"
-assert_file "$home/.claude/skills" "make_fake_home creates the skills directory"
+assert_file "$home/.claude/plugins/installed_plugins.json" "make_fake_home creates the plugin registry"
 assert_no_file "$home/.claude/nothing" "assert_no_file accepts a missing path"
 
 ln -s "$home/.claude.json" "$home/link"

@@ -50,7 +50,7 @@ assert_contains() { # haystack needle message
 make_fake_home() {
   local d
   d=$(mktemp -d "${TMPDIR:-/tmp}/aicfg.XXXXXX")
-  mkdir -p "$d/.claude/skills" "$d/.claude/output-styles" "$d/.claude/commands" "$d/.claude/plugins"
+  mkdir -p "$d/.claude/plugins"
   printf '{}\n' >"$d/.claude.json"
   # The ai plugin delivers skills/. A fake home that lacks it would read as
   # drift in every test, so pretend it is installed.

@@ -6,7 +6,6 @@ set -uo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 CLAUDE_JSON="${CLAUDE_JSON:-$HOME/.claude.json}"
-MANIFEST="$CLAUDE_DIR/.ai-repo-manifest"
 TEMPLATE="$REPO_ROOT/mcp/servers.json"
 
 case "${1:-}" in
@@ -21,62 +20,15 @@ note() { printf '  %s\n' "$1"; DRIFT=$((DRIFT + 1)); }
 printf 'repo:    %s\n' "$REPO_ROOT"
 printf 'machine: %s\n\n' "$CLAUDE_DIR"
 
-# 1. Everything the repo holds must be installed and point back here.
-printf 'installed content\n'
-# A destination can be three things: absent, a symlink, or real content left by
-# a --copy install or a hand edit. The third case used to fall through both
-# branches and report nothing, so a skill directory replaced by a real one of
-# the same name read as "in sync". Compare its content instead.
-check_installed() { # <absolute source in repo> <path relative to CLAUDE_DIR>
-  src="$1"
-  rel="$2"
-  dest="$CLAUDE_DIR/$rel"
-  if [ ! -e "$dest" ]; then
-    note "missing: $rel"
-  elif [ -L "$dest" ]; then
-    [ "$(readlink "$dest")" = "$src" ] || note "wrong target: $rel"
-  elif diff -r -q "$src" "$dest" >/dev/null 2>&1; then
-    :   # a --copy install whose content still matches the repo
-  else
-    note "content differs: $rel"
-  fi
-}
-
-# Skills and output styles are not linked; the plugin delivers them (section 5
-# below).
-for f in "$REPO_ROOT"/commands/*.md; do
-  [ -f "$f" ] || continue
-  check_installed "$f" "commands/$(basename "$f")"
-done
-if [ -f "$REPO_ROOT/memory/CLAUDE.md" ]; then
-  check_installed "$REPO_ROOT/memory/CLAUDE.md" "CLAUDE.md"
+# 1. The global memory must be a link back to this repo.
+printf 'memory\n'
+if [ ! -e "$CLAUDE_DIR/CLAUDE.md" ]; then
+  note "missing: CLAUDE.md"
+elif [ "$(readlink "$CLAUDE_DIR/CLAUDE.md")" != "$REPO_ROOT/memory/CLAUDE.md" ]; then
+  note "not linked to the repo: CLAUDE.md; run scripts/install.sh --force"
 fi
 
-# 2. Content on the machine that the repo does not track.
-# Every entry in ~/.claude/skills and ~/.claude/output-styles counts, even one
-# that matches a repo file by name: the plugin already loads it, so a second
-# copy is drift.
-printf '\nuntracked content\n'
-for sub in skills output-styles commands; do
-  [ -d "$CLAUDE_DIR/$sub" ] || continue
-  for e in "$CLAUDE_DIR/$sub"/*; do
-    [ -e "$e" ] || continue
-    name=$(basename "$e")
-    case "$name" in .*) continue ;; esac
-    rel="$sub/$name"
-    if [ "$sub" != "commands" ]; then
-      note "not in repo: $rel ($sub come from the ai plugin; remove this copy)"
-    elif [ ! -e "$REPO_ROOT/$rel" ]; then
-      note "not in repo: $rel"
-    fi
-  done
-done
-# The root-level CLAUDE.md sits outside the three subdirectories.
-if [ -e "$CLAUDE_DIR/CLAUDE.md" ] && [ ! -e "$REPO_ROOT/memory/CLAUDE.md" ]; then
-  note "not in repo: CLAUDE.md"
-fi
-
-# 3. MCP servers.
+# 2. MCP servers.
 printf '\nMCP servers\n'
 if command -v jq >/dev/null 2>&1 && [ -f "$TEMPLATE" ] && [ -f "$CLAUDE_JSON" ]; then
   repo_keys=$(jq -r 'keys[]' "$TEMPLATE" | sort)
@@ -115,18 +67,7 @@ else
   note "cannot compare MCP servers: jq, the template, or $CLAUDE_JSON is missing"
 fi
 
-# 4. The manifest itself.
-printf '\nmanifest\n'
-if [ -f "$MANIFEST" ]; then
-  while IFS= read -r rel; do
-    [ -n "$rel" ] || continue
-    [ -e "$CLAUDE_DIR/$rel" ] || note "manifest lists a path that is gone: $rel"
-  done <"$MANIFEST"
-else
-  note "no manifest at $MANIFEST; run scripts/install.sh"
-fi
-
-# 5. The plugin that delivers skills/ and output-styles/.
+# 3. The plugin that delivers skills/ and output-styles/.
 printf '\nplugin\n'
 INSTALLED="$CLAUDE_DIR/plugins/installed_plugins.json"
 if command -v jq >/dev/null 2>&1 && [ -f "$INSTALLED" ]; then

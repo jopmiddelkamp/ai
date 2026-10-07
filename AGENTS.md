@@ -15,7 +15,6 @@ own system.
 | `skills/` | one directory per skill | `SKILL.md`, YAML frontmatter with `name` and `description`, then markdown instructions |
 | `output-styles/` | one file per style | YAML frontmatter with `name`, `description`, `keep-coding-instructions`, then the style rules; the plugin loads it as `ai:<name>` |
 | `memory/` | the global user memory | plain markdown, no frontmatter; installs as `~/.claude/CLAUDE.md` |
-| `commands/` | one file per slash command | YAML frontmatter with `description`, then the command instructions; empty today |
 | `hooks/` | event scripts | plain executables; empty today |
 | `mcp/` | MCP server definitions | `servers.json`, a template with `${VAR}` placeholders |
 | `settings/` | reference only | never applied by a script |
@@ -26,7 +25,7 @@ own system.
 ```bash
 claude plugin marketplace add jopmiddelkamp/ai
 claude plugin install ai@ai  # the plugin delivers skills/ and output-styles/
-bash scripts/install.sh     # symlink commands and memory into ~/.claude
+bash scripts/install.sh     # symlink memory into ~/.claude
 bash scripts/apply-mcp.sh   # render mcp/servers.json into ~/.claude.json
 bash scripts/check-drift.sh # report differences
 bash scripts/web-prefs.sh   # copy the claude.ai preferences text to the clipboard

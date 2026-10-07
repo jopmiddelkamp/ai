@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh links repo content into a fake ~/.claude. Skills and output
+# install.sh links the global memory into a fake ~/.claude. Skills and output
 # styles are not linked: the ai plugin delivers them.
 set -uo pipefail
 . "$(dirname "$0")/lib.sh"
@@ -7,24 +7,11 @@ set -uo pipefail
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 script="$repo/scripts/install.sh"
 
-# --- case 1: empty home gets the links ---
+# --- case 1: empty home gets the link ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" >/dev/null 2>&1
 assert_rc 0 $? "install succeeds on an empty home"
 assert_symlink_to "$home/.claude/CLAUDE.md" "$repo/memory/CLAUDE.md" "the global CLAUDE.md is linked"
-assert_no_file "$home/.claude/skills/bro" "skills are not linked; the plugin delivers them"
-assert_no_file "$home/.claude/output-styles/eli5.md" "output styles are not linked; the plugin delivers them"
-assert_file "$home/.claude/.ai-repo-manifest" "the manifest is written"
-if grep -qx 'CLAUDE.md' "$home/.claude/.ai-repo-manifest"; then
-  _pass "the manifest lists CLAUDE.md"
-else
-  _fail "the manifest lists CLAUDE.md" "line not found"
-fi
-if grep -q '^skills/\|^output-styles/' "$home/.claude/.ai-repo-manifest"; then
-  _fail "the manifest lists no skills or output styles" "a skills/ or output-styles/ line is present"
-else
-  _pass "the manifest lists no skills or output styles"
-fi
 
 # --- case 2: running twice changes nothing ---
 out=$(CLAUDE_DIR="$home/.claude" bash "$script" 2>&1)
@@ -39,124 +26,44 @@ CLAUDE_DIR="$home/.claude" bash "$script" >/dev/null 2>&1
 assert_rc 1 $? "a real file blocks the install"
 assert_eq "mine" "$(cat "$home/.claude/CLAUDE.md")" "the real file is untouched"
 
-# --- case 4: --force backs the real file up ---
+# --- case 4: --dry-run reports the block and changes nothing ---
+out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run 2>&1)
+assert_rc 1 $? "--dry-run exits 1 when the path is blocked"
+assert_contains "$out" "blocked  CLAUDE.md" "--dry-run names the blocked path"
+assert_eq "mine" "$(cat "$home/.claude/CLAUDE.md")" "--dry-run leaves the real file alone"
+
+# --- case 5: --dry-run --force previews the backup and changes nothing ---
+out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run --force 2>&1)
+assert_rc 0 $? "--dry-run --force exits 0"
+assert_contains "$out" "backup" "--dry-run --force previews the backup"
+assert_eq "mine" "$(cat "$home/.claude/CLAUDE.md")" "--dry-run --force changes nothing"
+assert_eq "" "$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d)" "--dry-run --force creates no backup directory"
+
+# --- case 6: --force backs the real file up ---
 CLAUDE_DIR="$home/.claude" bash "$script" --force >/dev/null 2>&1
 assert_rc 0 $? "--force succeeds"
 assert_symlink_to "$home/.claude/CLAUDE.md" "$repo/memory/CLAUDE.md" "--force installs the link"
 found=$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d | head -1)
-assert_contains "$found" ".backup-" "--force creates a backup directory"
-assert_file "$found/CLAUDE.md" "the backup keeps the old file"
+assert_eq "mine" "$(cat "$found/CLAUDE.md" 2>/dev/null)" "the backup keeps the old file"
 rm -rf "$home"
 
-# --- case 5: a basename collision across namespaces keeps both backups ---
-# install.sh only visits destinations that exist in ITS OWN repo, so the
-# collision needs a repo with a command named CLAUDE.md next to the memory file.
-# This repo has no such pair, so build a throwaway one and run the same script
-# from inside it. REPO_ROOT is derived from the script's own location, so a
-# copy placed in <fake>/scripts/ treats <fake> as the repo.
-fake_repo=$(mktemp -d "${TMPDIR:-/tmp}/aicfgrepo.XXXXXX")
-mkdir -p "$fake_repo/scripts" "$fake_repo/skills" "$fake_repo/memory" "$fake_repo/commands"
-cp "$script" "$fake_repo/scripts/install.sh"
-printf 'repo-memory\n' >"$fake_repo/memory/CLAUDE.md"
-printf 'repo-command\n' >"$fake_repo/commands/CLAUDE.md"
-
-home=$(make_fake_home)
-printf 'old-memory\n' >"$home/.claude/CLAUDE.md"
-printf 'old-command\n' >"$home/.claude/commands/CLAUDE.md"
-# The real repo installs one path, so this two-path repo is also where a dry
-# run shows that it reports every block, not only the first.
-out=$(CLAUDE_DIR="$home/.claude" bash "$fake_repo/scripts/install.sh" --dry-run 2>&1)
-assert_contains "$out" "blocked  commands/CLAUDE.md" "--dry-run reports the first blocked path"
-assert_contains "$out" "blocked  CLAUDE.md" "--dry-run keeps going past the block"
-CLAUDE_DIR="$home/.claude" bash "$fake_repo/scripts/install.sh" --force >/dev/null 2>&1
-assert_rc 0 $? "--force succeeds when two namespaces share a basename"
-found=$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d | head -1)
-assert_eq "old-memory" "$(cat "$found/CLAUDE.md" 2>/dev/null)" "the memory backup survives"
-assert_eq "old-command" "$(cat "$found/commands/CLAUDE.md" 2>/dev/null)" "the commands backup survives too"
-rm -rf "$home" "$fake_repo"
-
-# --- case 6: --dry-run changes nothing ---
+# --- case 7: --dry-run on an empty home changes nothing ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --dry-run >/dev/null 2>&1
 assert_rc 0 $? "--dry-run succeeds"
 assert_no_file "$home/.claude/CLAUDE.md" "--dry-run creates no link"
-assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest"
 rm -rf "$home"
 
-# --- case 7: --dry-run reports every blocked path and exits 1 ---
-home=$(make_fake_home)
-printf 'mine\n' >"$home/.claude/CLAUDE.md"
-out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run 2>&1)
-rc=$?
-assert_rc 1 $rc "--dry-run exits 1 when a path is blocked"
-assert_contains "$out" "blocked" "--dry-run reports the block"
-assert_contains "$out" "blocked  CLAUDE.md" "--dry-run names the blocked path"
-assert_eq "mine" "$(cat "$home/.claude/CLAUDE.md")" "--dry-run leaves the real file alone"
-assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest when blocked"
-
-# --- case 8: --dry-run --force previews the backup and still changes nothing ---
-out=$(CLAUDE_DIR="$home/.claude" bash "$script" --dry-run --force 2>&1)
-rc=$?
-assert_rc 0 $rc "--dry-run --force exits 0"
-assert_contains "$out" "backup" "--dry-run --force previews the backup"
-assert_eq "mine" "$(cat "$home/.claude/CLAUDE.md")" "--dry-run --force changes nothing"
-assert_eq "" "$(find "$home/.claude" -maxdepth 1 -name '.backup-*' -type d)" "--dry-run --force creates no backup directory"
-rm -rf "$home"
-
-# --- case 9: --copy writes real files, and is safe to repeat ---
-home=$(make_fake_home)
-CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
-assert_rc 0 $? "--copy succeeds"
-assert_file "$home/.claude/CLAUDE.md" "--copy writes a real file"
-if [ -L "$home/.claude/CLAUDE.md" ]; then
-  _fail "--copy writes no symlink" "the path is still a link"
-else
-  _pass "--copy writes no symlink"
-fi
-CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
-assert_rc 0 $? "--copy is safe to repeat"
-rm -rf "$home"
-
-# --- case 10: refuse to install into the repo itself ---
+# --- case 8: refuse to install into the repo itself ---
 out=$(CLAUDE_DIR="$repo" bash "$script" --dry-run 2>&1)
 assert_rc 2 $? "CLAUDE_DIR inside the repo exits 2"
 assert_contains "$out" "inside the repo" "the error says why"
-assert_eq "" "$(find "$repo/commands" "$repo/memory" -type l 2>/dev/null)" "no self-link was created in the repo"
+assert_eq "" "$(find "$repo/memory" -type l 2>/dev/null)" "no self-link was created in the repo"
 
-# --- case 11: a bad option exits 2 ---
+# --- case 9: a bad option exits 2 ---
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --nope >/dev/null 2>&1
 assert_rc 2 $? "an unknown option exits 2"
-rm -rf "$home"
-
-# --- case 12: skill links from before the plugin are pruned ---
-# A machine installed before the plugin existed has skills/<name> symlinks and
-# a manifest that lists them. The plugin now loads those skills, so the links
-# must go, or every skill registers twice.
-home=$(make_fake_home)
-ln -s "$repo/skills/bro" "$home/.claude/skills/bro"
-printf 'skills/bro\n' >"$home/.claude/.ai-repo-manifest"
-out=$(CLAUDE_DIR="$home/.claude" bash "$script" 2>&1)
-assert_rc 0 $? "install succeeds on a pre-plugin machine"
-assert_contains "$out" "prune" "the old skill link is reported as pruned"
-assert_no_file "$home/.claude/skills/bro" "the old skill link is gone"
-if grep -q '^skills/' "$home/.claude/.ai-repo-manifest"; then
-  _fail "the manifest no longer lists the skill" "a skills/ line is still present"
-else
-  _pass "the manifest no longer lists the skill"
-fi
-rm -rf "$home"
-
-# --- case 13: output style links from before the plugin are pruned ---
-# Same story as case 12: the plugin now loads output-styles/, so an old link
-# would show the style twice in /output-style.
-home=$(make_fake_home)
-ln -s "$repo/output-styles/eli5.md" "$home/.claude/output-styles/eli5.md"
-printf 'output-styles/eli5.md\n' >"$home/.claude/.ai-repo-manifest"
-out=$(CLAUDE_DIR="$home/.claude" bash "$script" 2>&1)
-assert_rc 0 $? "install succeeds on a machine with an old style link"
-assert_contains "$out" "prune    output-styles/eli5.md" "the old style link is reported as pruned"
-assert_no_file "$home/.claude/output-styles/eli5.md" "the old style link is gone"
 rm -rf "$home"
 
 finish

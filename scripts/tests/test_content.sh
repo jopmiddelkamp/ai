@@ -19,8 +19,7 @@ for s in bro pull-request-comment-style review-pr \
 done
 
 # The repo is a Claude Code plugin. Both manifests must exist, agree on the
-# name, and let the plugin load skills/ and output-styles/. commands/ is linked
-# by install.sh, so the plugin must not load it a second time. Leaving out the
+# name, and let the plugin load skills/ and output-styles/. Leaving out the
 # outputStyles key keeps the default output-styles/ scan.
 pj="$repo/.claude-plugin/plugin.json"
 mj="$repo/.claude-plugin/marketplace.json"
@@ -29,7 +28,6 @@ assert_file "$mj" ".claude-plugin/marketplace.json exists"
 if command -v jq >/dev/null 2>&1; then
   assert_eq "ai" "$(jq -r .name "$pj" 2>/dev/null)" "plugin.json is named ai"
   assert_eq "./skills/" "$(jq -r .skills "$pj" 2>/dev/null)" "plugin.json loads skills/"
-  assert_eq "0" "$(jq -r '.commands | length' "$pj" 2>/dev/null)" "plugin.json loads no commands"
   assert_eq "false" "$(jq -r 'has("outputStyles")' "$pj" 2>/dev/null)" "plugin.json keeps the default output-styles/ scan"
   assert_eq "ai" "$(jq -r .name "$mj" 2>/dev/null)" "marketplace.json is named ai"
   assert_eq "ai" "$(jq -r '.plugins[0].name' "$mj" 2>/dev/null)" "marketplace.json lists the ai plugin"

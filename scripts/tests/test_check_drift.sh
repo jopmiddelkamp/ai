@@ -28,22 +28,9 @@ rc=$?
 assert_rc 1 $rc "a removed link is drift"
 assert_contains "$out" "missing: CLAUDE.md" "the report names the missing path"
 
-# Add an untracked skill.
-mkdir -p "$home/.claude/skills/mystery"
-printf -- '---\nname: mystery\n---\n' >"$home/.claude/skills/mystery/SKILL.md"
-out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
-assert_contains "$out" "mystery" "the report names an untracked skill"
-
-# A leftover style link from before the plugin is drift: the plugin loads it.
-ln -s "$repo/output-styles/eli5.md" "$home/.claude/output-styles/eli5.md"
-out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
-assert_contains "$out" "output-styles/eli5.md" "the report names a leftover style link"
-rm -f "$home/.claude/output-styles/eli5.md"
-
 # Remove a server from the machine.
 CLAUDE_DIR="$home/.claude" bash "$install" >/dev/null 2>&1
 jq 'del(.mcpServers.gbrain)' "$home/.claude.json" >"$home/x" && mv "$home/x" "$home/.claude.json"
-rm -rf "$home/.claude/skills/mystery"
 out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
 rc=$?
 assert_rc 1 $rc "a missing MCP server is drift"
@@ -55,20 +42,14 @@ CLAUDE_JSON="$home/.claude.json" MCP_ENV_FILE="$good_env" bash "$apply" >/dev/nu
 CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" >/dev/null 2>&1
 assert_rc 0 $? "a reinstalled machine is back in sync"
 
-# Replace an installed symlink with a real file whose content differs.
+# Replace the link with a real file.
 rm -f "$home/.claude/CLAUDE.md"
 printf 'not the real content\n' >"$home/.claude/CLAUDE.md"
 out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
 rc=$?
-assert_rc 1 $rc "a symlink replaced by different content is drift"
-assert_contains "$out" "content differs" "the report calls out the content difference"
-
-# Replace it again with a real copy whose content matches the repo -- the
-# legitimate --copy case. This must not be reported as drift.
-rm -f "$home/.claude/CLAUDE.md"
-cp "$repo/memory/CLAUDE.md" "$home/.claude/CLAUDE.md"
-CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" >/dev/null 2>&1
-assert_rc 0 $? "a --copy install with matching content is not drift"
+assert_rc 1 $rc "a real file in place of the link is drift"
+assert_contains "$out" "not linked to the repo" "the report calls out the missing link"
+CLAUDE_DIR="$home/.claude" bash "$install" --force >/dev/null 2>&1
 
 # Change one server's url on the machine while everything else stays in sync.
 jq '.mcpServers.gbrain.url = "https://example.invalid/mcp"' "$home/.claude.json" >"$home/x" && mv "$home/x" "$home/.claude.json"
