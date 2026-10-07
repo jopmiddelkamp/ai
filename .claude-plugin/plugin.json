@@ -2,13 +2,12 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "ai",
   "displayName": "ai",
-  "description": "Jop Middelkamp's personal skills for Claude Code: PR review, PR comment style, research, business coaching, and bro.",
+  "description": "Jop Middelkamp's personal skills for Claude Code: PR review, PR comment style, research, business coaching, and bro. Plus the ELI5-readable output style.",
   "author": { "name": "Jop Middelkamp", "url": "https://github.com/jopmiddelkamp" },
   "homepage": "https://github.com/jopmiddelkamp/ai",
   "repository": "https://github.com/jopmiddelkamp/ai",
   "license": "Apache-2.0",
   "keywords": ["skills", "review", "research", "config"],
   "skills": "./skills/",
-  "commands": [],
-  "outputStyles": []
+  "commands": []
 }

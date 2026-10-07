@@ -31,7 +31,7 @@ Always think of me as if I've had a long day at work and my brain is exhausted. 
 
 ## Visuals
 
-- Use a visual artifact, Mermaid diagram or a code snippet instead of prose to describe a flow.
+- Use a visual artifact, Mermaid diagram (render via MCP if needed) or a code snippet instead of prose to describe a flow.
 - When a picture explains faster than text, make one: a Mermaid diagram, a chart, or an interactive artifact.
 - Show a change as a code snippet, not as prose.
 - Write one caption sentence before each visual.

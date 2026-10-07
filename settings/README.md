@@ -17,7 +17,7 @@ diff <(jq -S . settings/claude-settings.json) <(jq -S . ~/.claude/settings.json)
 |---|---|---|
 | `model` | `opus[1m]` | the default model |
 | `effort` / `effortLevel` | `max` | maximum reasoning effort |
-| `outputStyle` | `ELI5-readable` | comes from `output-styles/eli5.md` in this repo |
+| `outputStyle` | `ai:ELI5-readable` | the `ai` plugin delivers it from `output-styles/eli5.md` in this repo |
 | `permissions.defaultMode` | `auto` | fewer prompts |
 | `tui` | `fullscreen` | full screen terminal interface |
 | `statusLine.command` | `bash ~/.claude/statusline-command.sh` | the custom status line |

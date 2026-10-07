@@ -20,8 +20,9 @@ bash scripts/install.sh --dry-run
 #    original into ~/.claude/.backup-<timestamp>/ before replacing it.
 bash scripts/install.sh --force
 
-# 4. Install the skills. This repo is a Claude Code plugin; the plugin
-#    delivers skills/. install.sh does not link them.
+# 4. Install the skills and the output style. This repo is a Claude Code
+#    plugin; the plugin delivers skills/ and output-styles/. install.sh does
+#    not link them.
 claude plugin marketplace add jopmiddelkamp/ai
 claude plugin install ai@ai
 
@@ -48,8 +49,9 @@ bash scripts/apply-mcp.sh
 
 ## Changing a skill
 
-Claude Code loads the skills from the plugin, not from this folder. The plugin
-is this repo on GitHub. So a skill change goes live in three steps:
+Claude Code loads the skills and the output style from the plugin, not from
+this folder. The plugin is this repo on GitHub. So a skill or style change goes
+live in three steps:
 
 ```bash
 git commit -am "feat: ..." && git push
@@ -58,13 +60,13 @@ claude plugin marketplace update ai && claude plugin update ai@ai
 ```
 
 The marketplace has `autoUpdate` on, so a restart alone usually picks the
-change up too. Output styles, commands, and the memory file are symlinks, so
-those change live.
+change up too. Commands and the memory file are symlinks, so those change
+live.
 
 ## Commands
 
 ```bash
-bash scripts/install.sh      # link styles, commands, and memory into ~/.claude
+bash scripts/install.sh      # link commands and memory into ~/.claude
 bash scripts/apply-mcp.sh    # write the MCP servers into ~/.claude.json
 bash scripts/check-drift.sh  # what differs between repo and machine
 bash scripts/check-secrets.sh  # is anything leaking
@@ -104,7 +106,7 @@ replacing the old version.
 |---|---|
 | [.claude-plugin/](.claude-plugin/) | the plugin and marketplace manifests; the plugin is named `ai` |
 | [skills/](skills/) | 11 skills, delivered by the plugin |
-| [output-styles/](output-styles/) | the ELI5-readable style |
+| [output-styles/](output-styles/) | the ELI5-readable style, delivered by the plugin as `ai:ELI5-readable` |
 | [memory/](memory/) | the always-on rules, linked to `~/.claude/CLAUDE.md` |
 | [mcp/](mcp/) | 7 MCP servers, no secrets |
 | [integrations/](integrations/) | notes on 8 third-party tools |

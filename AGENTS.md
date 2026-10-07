@@ -11,9 +11,9 @@ own system.
 
 | Folder | What it holds | Shape |
 |---|---|---|
-| `.claude-plugin/` | the plugin and marketplace manifests | `plugin.json` names the plugin `ai` and points it at `skills/`; `marketplace.json` makes the repo installable with `claude plugin marketplace add jopmiddelkamp/ai` |
+| `.claude-plugin/` | the plugin and marketplace manifests | `plugin.json` names the plugin `ai`, which loads `skills/` and `output-styles/`; `marketplace.json` makes the repo installable with `claude plugin marketplace add jopmiddelkamp/ai` |
 | `skills/` | one directory per skill | `SKILL.md`, YAML frontmatter with `name` and `description`, then markdown instructions |
-| `output-styles/` | one file per style | YAML frontmatter with `name`, `description`, `keep-coding-instructions`, then the style rules |
+| `output-styles/` | one file per style | YAML frontmatter with `name`, `description`, `keep-coding-instructions`, then the style rules; the plugin loads it as `ai:<name>` |
 | `memory/` | the global user memory | plain markdown, no frontmatter; installs as `~/.claude/CLAUDE.md` |
 | `commands/` | one file per slash command | YAML frontmatter with `description`, then the command instructions; empty today |
 | `hooks/` | event scripts | plain executables; empty today |
@@ -25,8 +25,8 @@ own system.
 
 ```bash
 claude plugin marketplace add jopmiddelkamp/ai
-claude plugin install ai@ai  # the plugin delivers skills/
-bash scripts/install.sh     # symlink styles, commands, and memory into ~/.claude
+claude plugin install ai@ai  # the plugin delivers skills/ and output-styles/
+bash scripts/install.sh     # symlink commands and memory into ~/.claude
 bash scripts/apply-mcp.sh   # render mcp/servers.json into ~/.claude.json
 bash scripts/check-drift.sh # report differences
 bash scripts/web-prefs.sh   # copy the claude.ai preferences text to the clipboard

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Link this repo's output styles, commands, and global memory into ~/.claude.
-# Skills are NOT linked: the repo is a Claude Code plugin, and the plugin
-# delivers skills/ (see .claude-plugin/plugin.json and settings/plugins.md).
+# Link this repo's commands and global memory into ~/.claude.
+# Skills and output styles are NOT linked: the repo is a Claude Code plugin,
+# and the plugin delivers skills/ and output-styles/ (see
+# .claude-plugin/plugin.json and settings/plugins.md).
 # The repo is the source of truth. This script never edits repo files.
 set -euo pipefail
 
@@ -103,7 +104,7 @@ install_one() {
 
   if [ "$action" = "backup" ]; then
     # Keep the namespace in the backup path. A flat backup would let
-    # output-styles/x.md and commands/x.md collide, and `mv` overwrites
+    # commands/CLAUDE.md and the root CLAUDE.md collide, and `mv` overwrites
     # silently, so one original would be lost while the script reported
     # success.
     mkdir -p "$(dirname "$BACKUP_DIR/$rel")"
@@ -129,17 +130,12 @@ install_one() {
   printf '%-8s %s\n' "$action" "$rel"
 }
 
-# Skills are deliberately absent here. Linking skills/ into ~/.claude/skills
-# while the plugin also loads them would register every skill twice. A manifest
-# from before the plugin still lists skills/<name>; the prune loop below removes
-# those links.
+# Skills and output styles are deliberately absent here. Linking them into
+# ~/.claude while the plugin also loads them would register each one twice. A
+# manifest from before the plugin still lists skills/<name> and
+# output-styles/<file>; the prune loop below removes those links.
 
-# Output styles and commands: one file each.
-for f in "$REPO_ROOT"/output-styles/*.md; do
-  [ -f "$f" ] || continue
-  install_one "$f" "output-styles/$(basename "$f")"
-done
-
+# Commands: one file each.
 for f in "$REPO_ROOT"/commands/*.md; do
   [ -f "$f" ] || continue
   install_one "$f" "commands/$(basename "$f")"

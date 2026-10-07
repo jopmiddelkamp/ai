@@ -287,7 +287,7 @@
       "autoUpdate": true
     }
   },
-  "outputStyle": "ELI5-readable",
+  "outputStyle": "ai:ELI5-readable",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,

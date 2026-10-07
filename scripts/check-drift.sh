@@ -42,22 +42,20 @@ check_installed() { # <absolute source in repo> <path relative to CLAUDE_DIR>
   fi
 }
 
-# Skills are not linked; the plugin delivers them (section 5 below).
-for f in "$REPO_ROOT"/output-styles/*.md "$REPO_ROOT"/commands/*.md; do
+# Skills and output styles are not linked; the plugin delivers them (section 5
+# below).
+for f in "$REPO_ROOT"/commands/*.md; do
   [ -f "$f" ] || continue
-  case "$f" in
-    */output-styles/*) rel="output-styles/$(basename "$f")" ;;
-    *) rel="commands/$(basename "$f")" ;;
-  esac
-  check_installed "$f" "$rel"
+  check_installed "$f" "commands/$(basename "$f")"
 done
 if [ -f "$REPO_ROOT/memory/CLAUDE.md" ]; then
   check_installed "$REPO_ROOT/memory/CLAUDE.md" "CLAUDE.md"
 fi
 
 # 2. Content on the machine that the repo does not track.
-# Every entry in ~/.claude/skills counts, even one that matches a repo skill by
-# name: the plugin already loads that skill, so a second copy is drift.
+# Every entry in ~/.claude/skills and ~/.claude/output-styles counts, even one
+# that matches a repo file by name: the plugin already loads it, so a second
+# copy is drift.
 printf '\nuntracked content\n'
 for sub in skills output-styles commands; do
   [ -d "$CLAUDE_DIR/$sub" ] || continue
@@ -66,8 +64,8 @@ for sub in skills output-styles commands; do
     name=$(basename "$e")
     case "$name" in .*) continue ;; esac
     rel="$sub/$name"
-    if [ "$sub" = "skills" ]; then
-      note "not in repo: $rel (skills come from the ai plugin; remove this copy)"
+    if [ "$sub" != "commands" ]; then
+      note "not in repo: $rel ($sub come from the ai plugin; remove this copy)"
     elif [ ! -e "$REPO_ROOT/$rel" ]; then
       note "not in repo: $rel"
     fi
@@ -128,7 +126,7 @@ else
   note "no manifest at $MANIFEST; run scripts/install.sh"
 fi
 
-# 5. The plugin that delivers skills/.
+# 5. The plugin that delivers skills/ and output-styles/.
 printf '\nplugin\n'
 INSTALLED="$CLAUDE_DIR/plugins/installed_plugins.json"
 if command -v jq >/dev/null 2>&1 && [ -f "$INSTALLED" ]; then
