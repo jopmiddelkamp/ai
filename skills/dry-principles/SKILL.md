@@ -1,222 +1,97 @@
 ---
 name: dry-principles
 description: "Use when writing, refactoring, or reviewing code that duplicates logic, rules, constants, or models; when deciding whether to extract shared code or keep copies; when shared code grows boolean flags or conditionals; when client and server validation may drift; or when test setup feels repetitive or over-shared."
+metadata:
+  optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
+  optimized-on: "2026-10-07"
 ---
 
-# DRY Principles
+# DRY: one home for each piece of knowledge
 
-Reference for the DRY principle. Defines knowledge duplication vs coincidental similarity, when duplication is correct, the Wrong Abstraction lifecycle, and DAMP testing.
+DRY is about knowledge, not code. Two identical-looking blocks are not always a violation. Two different-looking blocks are a violation when they encode the same business rule. The test: **if this rule changes, how many places must I update?** More than one is a DRY violation, whether or not the code looks alike.
 
-**The codebase comes first.** The existing project's conventions, structure, and style win. This skill adapts to the project, not the other way round. Before writing new code, look for an existing reusable solution in the codebase and use it. Only add marker comments such as `// DRY:` or `// DRY-DEVIATION:` when the codebase already uses them.
+**The codebase comes first.** Its conventions, structure, and style win. Before writing new code, look for an existing reusable solution in the codebase and use it. Use `// DRY:` or `// DRY-DEVIATION:` marker comments only when the codebase already uses them; otherwise explain the decision in a normal comment or the PR description, and leave the markers out of your answer.
 
-**Code examples:** `examples/real-vs-coincidental.dart`, `examples/wrong-abstraction.dart`, `examples/violations.md`, `examples/damp-tests.dart`. The language and framework in the examples are illustrative only.
+**When you review or advise on code,** label each finding with its severity from the review checklist below and list the most severe first. Explain each finding by the principle and its reason, not by this skill or its tables, because the reader has not seen them. Keep the answer to the findings, each stated once: what, severity, why, and the fix. Stay inside the code shown and the question asked: no sections on topics outside this principle, no redesign sketch or target-shape code, and no findings about code that does not exist yet. State as fact only what the code or the user shows; call anything else an assumption.
 
-**Related skills:** `solid-principles` (SRP-DRY tension when actors differ), `kiss-principles` (counterforce to premature extraction; see it for knowledge-based extraction guards and timing).
+Related skills: `kiss-principles` (extraction timing and the wrong-abstraction guards) and `solid-principles` (the SRP-DRY tension). Code examples, language illustrative only: `examples/real-vs-coincidental.dart`, `examples/wrong-abstraction.dart`, `examples/violations.md`, `examples/damp-tests.dart`.
 
-## The DRY Principle, Correctly Defined
+## Do these change for the same reason?
 
-> "Every piece of **knowledge** must have a single, unambiguous, authoritative representation within a system." — *The Pragmatic Programmer*, Hunt & Thomas
+| Kind | How to recognize it | Action |
+|---|---|---|
+| Knowledge duplication | The same business rule. The copies change for the same reason at the same time. Example: one fee calculation in both the payment flow and the transfer flow. | Extract |
+| Coincidental similarity | Looks alike, but different concepts that change for different reasons or at different times. Example: `CreatePaymentInput` and `CreateTransferInput` both have `amount`, `currency`, and `description`, but their validation evolves independently. | Keep separate |
+| Structural similarity | A repeated convention, such as constructor injection in every service. It changes only when the pattern itself changes. | Document the pattern; do not abstract the instances |
 
-DRY is about **knowledge**, not **code**. Two identical-looking code blocks are not necessarily a DRY violation. Two different-looking code blocks can be a DRY violation if they encode the same business rule.
+Name the shared concept before you extract. If the best name is `SharedHelper`, `CommonUtils`, or `BaseProcessor`, you have not found the abstraction yet. A good name describes the knowledge being shared, not the code structure.
 
-The key question: **"If this business rule changes, how many places do I need to update?"** If the answer is more than one, you have a DRY violation, whether or not the code looks similar.
+## When duplication is correct
 
-## Three Types of Similarity
+The coupling cost of sharing can exceed the duplication cost:
 
-### 1. Knowledge Duplication (Semantic: Extract)
+- **Across architectural layers.** A domain `Payment`, an application `PaymentDto`, an API `PaymentResponse`, and a UI `PaymentViewState` are four correct representations, not duplication. Mapper code between them is structural; do not extract a generic mapper, because each boundary evolves on its own.
+- **Across bounded contexts or separately deployed services.** Each owns its own models. A shared model library creates a deployment dependency and a version-sync burden that cost more than the duplication.
+- **When the actors differ (DRY vs SRP).** The same logic serving different stakeholders is coincidental. Example: fees for customer-facing payments and fees for internal reconciliation share a formula today, but promotions will change one and not the other. SRP wins.
 
-The same business rule or decision encoded in multiple places. When the rule changes, all copies must change together.
+| Scope | Action | Coupling cost |
+|---|---|---|
+| Within a class | Extract a method | None |
+| Within a module or feature | Extract a shared class in the same module | Low |
+| Across features in one product | Shared module with clear ownership; worth it for business rules | Medium |
+| Across separately deployed services | Keep duplicated | High |
+| Across bounded contexts | Keep duplicated | Very high |
 
-**Heuristic:** These change for the **same reason** at the **same time**.
+## Within one product: one source of truth
 
-**Example:** The same fee calculation in both a payment flow and a transfer flow. When the fee structure changes, both must update. This is one piece of knowledge in two places.
+Within one product, shared constants and business rules have one authoritative home. With a backend and one or more clients (web, mobile, portal), the API contract is the source of truth. If the codebase already generates types or validation schemas from it (a database schema, an OpenAPI spec, a shared schema package), use the generated artifacts. Server validation is authoritative; client validation is advisory and exists for UX. A client must not hand-write its own model or validation of a server concept: when client and server rules differ, that is a DRY violation. See `examples/violations.md` for validation drift.
 
-### 2. Coincidental Similarity (Syntactic: Keep Separate)
+## The wrong abstraction
 
-Code that looks similar today but represents different business concepts. It will diverge as requirements evolve.
+"Duplication is far cheaper than the wrong abstraction" (Sandi Metz). These signals mean shared code now serves several concepts:
 
-**Heuristic:** These change for **different reasons** or at **different times**.
-
-**Example:** A `CreatePaymentInput` and a `CreateTransferInput` both have `amount`, `currency`, and `description` fields. They look identical, but payments and transfers are different concepts with different validation rules that evolve independently.
-
-### 3. Structural Similarity (Pattern: Document)
-
-Repeated code structure that follows a convention or pattern (for example, every service class uses the same constructor injection). This is intentional consistency, not duplication.
-
-**Heuristic:** These change when the **pattern itself** changes, not when individual business rules change.
-
-### The Decision Heuristic
-
-> **"Do these change for the same reason?"**
-
-| Answer | Action |
-|--------|--------|
-| Yes, same business rule | Extract: this is knowledge duplication |
-| No, different business concepts | Keep separate: this is coincidental similarity |
-| Same pattern or convention | Document the pattern, don't abstract the instances |
-
-See `examples/real-vs-coincidental.dart` for concrete scenarios.
-
-## When Duplication Is Correct
-
-Duplication is not always wrong. In these cases, the coupling cost of sharing exceeds the duplication cost.
-
-### Across Architectural Layers
-
-If the codebase uses layered architecture, DTOs, entities, and view models may have similar fields but serve different layers. Merging them couples the layers.
-
-**Example:** A domain `Payment` entity, an application-layer `PaymentDto`, an API `PaymentResponse`, and a UI `PaymentViewState` are four correct representations of "payment", not duplication.
-
-**Mapper code between these representations is structural, not duplicative.** Don't extract a generic mapper; each boundary has its own evolution path.
-
-### Across Bounded Contexts or Separate Services
-
-If the system has separate bounded contexts or separately deployed services, each owns its own models. Sharing models between them creates coupling that is worse than duplication.
-
-### When Coupling Cost Exceeds Duplication Cost
-
-Small-scale duplication within one module is sometimes preferable to a shared abstraction that couples unrelated features. See `kiss-principles` for extraction timing (knowledge-based, with wrong-abstraction guards) and the KISS-DRY decision table.
-
-### Naming the Concept (Before Extracting)
-
-If you can't name the shared concept better than "SharedHelper", "CommonUtils", or "BaseProcessor", you haven't found the abstraction yet. A good extraction has a name that describes the **knowledge** being shared, not the **code structure**.
-
-## The Wrong Abstraction
-
-> "Duplication is far cheaper than the wrong abstraction." — Sandi Metz
-
-### The Lifecycle of Abstraction Decay
-
-1. **Two similar cases appear.** A developer extracts shared code. Feels good.
-2. **A third case is slightly different.** Add a boolean parameter. Manageable.
-3. **A fourth case needs another variation.** Add another parameter. Getting complex.
-4. **A fifth case is an edge case.** Add a conditional branch. Now the shared code is harder to understand than the duplication was.
-5. **Nobody dares touch it.** The abstraction is load-bearing: everyone depends on it, nobody understands it.
-
-### Red Flags of a Wrong Abstraction
-
-| Signal | What It Means |
-|--------|---------------|
-| Boolean parameters controlling behavior | The abstraction serves multiple concepts |
-| Growing conditional chains inside shared code | Cases are diverging, not converging |
-| Callers passing `null` or empty values for unused parameters | The interface is too broad for some callers |
+| Signal | What it means |
+|---|---|
+| Boolean or mode parameters that control behavior | The abstraction serves several concepts |
+| Growing conditional chains inside shared code | The cases are diverging, not converging |
+| Callers pass `null` or empty values for unused parameters | The interface is too broad for some callers |
 | "I need to understand all callers to change this" | Coupling exceeds the value of sharing |
-| Shared base class where subclasses override most methods | Inheritance serves code reuse, not "is-a" |
-| Comments like "// only used by X" inside shared code | The sharing is no longer symmetric |
+| A base class whose subclasses override most methods | Inheritance serves code reuse, not "is-a" |
+| Comments like `// only used by X` inside shared code | The sharing is no longer symmetric |
 
-### The Fix: Inline and Re-Extract
+The fix is **inline and re-extract**: inline the shared code back into each caller, accept the temporary duplication, let the natural groupings appear, then re-extract only the knowledge that is truly shared. Adding more parameters or conditionals makes it worse. When other code depends on the abstraction, propose the change and get approval first instead of restructuring it silently. See `examples/wrong-abstraction.dart`.
 
-1. **Inline** the shared code back into each caller.
-2. **Accept the temporary duplication.** This is a healthy intermediate state.
-3. **Let the natural groupings emerge.** With all code visible, the real abstractions become clear.
-4. **Re-extract** only the genuinely shared knowledge, if any exists.
+## Tests: DAMP, not DRY
 
-Do NOT try to fix a wrong abstraction by adding more parameters or conditionals.
+DAMP means descriptive and meaningful phrases. In test code, share the "how" and keep the "what" explicit:
 
-If the wrong abstraction is an existing shared component that other code depends on, propose the inline-and-re-extract change and get approval first. Don't restructure it silently.
+- **Share:** builders, factories, fixtures, setup helpers, custom matchers for domain checks, common mock setup.
+- **Keep explicit:** each test scenario tells its whole story, with visible arrange and assert sections.
 
-See `examples/wrong-abstraction.dart` for a detailed lifecycle example.
+Optimize for the readability of one test, not for fewer total lines. Follow the test style the codebase already uses. See `examples/damp-tests.dart`.
 
-## DRY Violations to Watch For
-
-### Shotgun Surgery
-A single business rule change requires modifying multiple files. The knowledge is scattered.
-
-### Business Rules in Multiple Places
-The same validation, calculation, or business decision implemented in more than one location.
-
-### Magic Numbers
-Literal values scattered through the codebase that represent one business decision. `3600` (token expiry), `0.015` (fee percentage), `3` (max retries) appearing in multiple files without a named constant.
-
-### Copy-Paste with Minor Variations
-Nearly identical blocks of code where the differences are incidental, not intentional.
-
-### Parallel Hierarchies
-Two class hierarchies that mirror each other and must be updated in lockstep.
-
-## DRY vs SRP Tension
-
-When DRY and SRP conflict, **SRP wins when actors differ**.
-
-The same logic serving different stakeholders is coincidental similarity, not knowledge duplication. Even if the code is identical today, different stakeholders will drive divergence.
-
-**Example:** Fee calculation for customer-facing payments vs fee calculation for internal reconciliation reports. Same formula today, but the customer-facing calculation might add promotional discounts while reconciliation stays on raw fees.
-
-Cross-reference: `solid-principles`, SRP section.
-
-## DRY vs Loose Coupling
-
-| Scope | Action | Rationale |
-|-------|--------|-----------|
-| Within a class | Extract method | Zero coupling cost |
-| Within a module or feature | Extract to a shared class in the same module | Low coupling cost |
-| Across features in the same product | Shared module with clear ownership | Medium coupling cost; worth it for business rules |
-| Across separately deployed services | **Keep duplicated** | High coupling cost; a shared library creates a deployment dependency |
-| Across bounded contexts | **Keep duplicated** | Very high coupling cost; different models, different evolution |
-
-## DRY Across Services and Clients
-
-### Separate Products: Accept Duplication
-
-Separately deployed services or products with independent bounded contexts should accept duplication. Sharing models between them creates deployment coupling and a version synchronization burden.
-
-### Within One Product: Single Source of Truth
-
-Within a single product, shared constants and business rules have one authoritative source.
-
-### Frontend-Backend Contract Sync
-
-If one product has a backend and one or more clients (web, mobile, portal), the API contract is the **single source of truth**. If the codebase already generates types or validation schemas from that contract (for example, from a database schema, an OpenAPI spec, or a shared schema package), use the generated artifacts. Server validation is authoritative; client validation is advisory and exists for UX. Clients should not hand-write their own model or validation of a server concept. When client and server rules differ, that is a DRY violation.
-
-See `examples/violations.md` for validation drift examples.
-
-## DAMP in Tests
-
-> DAMP: Descriptive And Meaningful Phrases
-
-In test code, **DRY the "how" (infrastructure), allow duplication in the "what" (scenarios)**.
-
-### What to DRY in Tests
-- Test infrastructure: builders, factories, fixtures, setup helpers
-- Assertion helpers: custom matchers for domain-specific checks
-- Mock configuration: shared mock setups for common dependencies
-
-### What to Allow Duplication In
-- Test scenarios: each test tells a complete story
-- Arrange sections: explicit setup makes preconditions visible
-- Assert sections: explicit assertions make the expected outcome visible
-
-Test code optimizes for **readability at the individual test level**, not for minimizing total lines. Follow the test style the codebase already uses.
-
-See `examples/damp-tests.dart` for DAMP testing examples.
-
-## DRY Code Review Checklist
+## Review checklist
 
 | # | Check | Severity |
-|---|-------|----------|
-| 1 | Same business rule in multiple places | High |
+|---|---|---|
+| 1 | The same business rule in several places, so one rule change touches many files | High |
 | 2 | New code that duplicates an existing reusable solution in the codebase | High |
-| 3 | Magic numbers without named constants | Medium |
-| 4 | Copy-paste with minor variations | Medium |
-| 5 | Growing conditionals in shared code | High |
-| 6 | Boolean parameters on shared methods | Medium |
-| 7 | Frontend/backend validation drift | High |
-| 8 | Shared library between separately deployed services | Medium |
+| 3 | Growing conditionals in shared code | High |
+| 4 | Frontend and backend validation drift | High |
+| 5 | Magic numbers for one business decision without a named constant, such as `3600` (token expiry), `0.015` (fee), `3` (max retries) in several files | Medium |
+| 6 | Copy-paste with incidental, not intentional, differences | Medium |
+| 7 | Boolean parameters on shared methods | Medium |
+| 8 | A shared library between separately deployed services | Medium |
 
-## Documentation Convention (Only If the Codebase Uses It)
+Also watch for parallel class hierarchies that mirror each other and must change in lockstep.
 
-If the codebase already marks DRY decisions in comments, follow its format. A common shape:
+## Marker comments
 
-**`// DRY:`: applying the principle** (explaining why duplication is kept):
+Only when the codebase already uses them:
+
 ```
 // DRY: Coincidental similarity — payments and transfers evolve independently
 // DRY: Separate bounded contexts — duplication accepted over shared library coupling
-```
-
-**`// DRY-DEVIATION:`: knowingly violating** (duplicating knowledge):
-```
 // DRY-DEVIATION: Fee calculation duplicated in reconciliation job — scheduled for extraction
 // DRY-DEVIATION: Validation rules duplicated client/server — contract generation not yet available
 ```
-
-If the codebase does not use these markers, explain the decision in a normal comment or the PR description instead.

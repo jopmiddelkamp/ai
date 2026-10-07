@@ -1,6 +1,9 @@
 ---
 name: pull-request-comment-style
 description: Use when writing or replying to a pull request comment, review comment, or review summary on GitHub, GitLab, Bitbucket, or Azure DevOps, or when a review flow needs findings posted to a PR. Triggers on "PR comment", "review comment", "reply in the thread", "post this on the PR", "draft a review summary", "write a nit".
+metadata:
+  optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
+  optimized-on: "2026-10-07"
 ---
 
 # Pull request comment style

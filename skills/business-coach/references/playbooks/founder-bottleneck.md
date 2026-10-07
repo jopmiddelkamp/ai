@@ -141,6 +141,8 @@ A job that requires your presence = you own a job, not a business.
 
 ### 🔧 THE DELEGATION LADDER
 
+Source note: this ladder is a common management tool, not from one book in this library. Use it without a book credit.
+
 ```
 MOST PEOPLE DO DELEGATION WRONG.
 They say "go handle that" and wonder why it fails.

@@ -1,6 +1,9 @@
 ---
 name: compliance
 description: "Use when writing or reviewing code that handles personal, financial, health, or otherwise sensitive data, or that takes automated real-world actions such as orders, payments, emails, or calls. Also use for questions about audit readiness, ISO 27001, SOC 2, HIPAA, GDPR, data handling, retention, logging, vendors, or \"is this compliant\"."
+metadata:
+  optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
+  optimized-on: "2026-10-07"
 ---
 
 # Compliance-First Development

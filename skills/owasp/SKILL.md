@@ -1,6 +1,9 @@
 ---
 name: owasp
 description: "Use when writing or reviewing code that handles user input, authentication, sessions, authorization, APIs, webhooks, file uploads, data sync, LLM features, secrets, or third-party calls, even when security is not mentioned. Also use for questions about OWASP (Top 10, API Top 10, Mobile Top 10, MASVS, ASVS, LLM Top 10), injection, XSS, CSRF, SSRF, or how to secure an endpoint."
+metadata:
+  optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
+  optimized-on: "2026-10-07"
 ---
 
 # OWASP Technical Security Controls

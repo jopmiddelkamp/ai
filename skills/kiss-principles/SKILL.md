@@ -1,193 +1,103 @@
 ---
 name: kiss-principles
 description: "Use when writing, reviewing, or refactoring code and a design may be more complex than the current requirements need: an interface with one implementation, an extra layer that only forwards calls, a generic type or config option with one value, a design pattern for a simple case, a class with many constructor dependencies, or a choice between duplicating code and extracting a shared abstraction."
+metadata:
+  optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
+  optimized-on: "2026-10-07"
 ---
 
-# KISS Principle
+# KISS: keep it simple
 
-Reference for the KISS (Keep It Simple, Stupid) principle: over-engineering detection, simplicity heuristics, and complexity calibration.
+How to tell when an abstraction earns its place. The simplest solution that meets the current requirements wins. "We might need it later" is not a current requirement.
 
-**The existing codebase wins.** Its conventions, architecture, and style come first. This skill adapts to the project, not the other way round. Use the `// KISS:` and `// KISS-DEVIATION:` marker comments only when the codebase already uses them.
+**When you review or advise on code,** label each finding with its severity from the red-flags table below and list the most severe first. Explain each finding by the principle and its reason, not by this skill or its tables, because the reader has not seen them. Keep the answer to the findings, each stated once: what, severity, why, and the fix. Stay inside the code shown and the question asked: no sections on topics outside this principle, no redesign sketch or target-shape code, and no findings about code that does not exist yet. State as fact only what the code or the user shows; call anything else an assumption.
 
-## Existing Code Comes Before KISS
+## The codebase comes first
 
-KISS picks the simplest solution among the ones that fit the codebase. It never justifies a new, simpler parallel solution next to an existing one. Work through these steps in order:
+KISS picks the simplest solution among the ones that fit the codebase. It never justifies a second, simpler solution next to an existing one. Work in this order:
 
-1. **Match the existing style.** Write the code the way the codebase already writes this kind of code: structure, patterns, naming, error handling. A consistent solution beats a simpler one that looks different from the rest of the application.
-2. **Reuse what exists.** Before writing new code, search the codebase for a component, helper, or service that already solves this problem. If one exists, use it, even when a hand-written version would be shorter.
-3. **Make an existing solution reusable.** If a solution for the same problem exists but is locked inside one feature, extract it into a reusable component and use it in both places. Do not write a second copy.
-4. **Propose, don't silently simplify.** If you think the existing reusable component could be much simpler, do not rewrite it as part of your task. Use it as it is, then describe the simpler design to the user and ask for approval before you change it.
+1. **Match the existing style:** structure, patterns, naming, error handling. A consistent solution beats a simpler one that looks different from the rest of the application.
+2. **Reuse what exists.** Search for a component, helper, or service that already solves this problem, and use it, even when a hand-written version would be shorter.
+3. **Make an existing solution reusable** when it is locked inside one feature. Extract it and use it in both places instead of writing a second copy.
+4. **Propose, do not silently simplify.** If an existing component could be much simpler, use it as it is in your task. Then describe the simpler design to the user and ask for approval before you change it.
 
-Steps 2 and 3 apply when the existing code solves the same problem: the same rule or contract, the same reason to change. Code that only looks similar is not the same problem; see Premature Abstraction below.
+Steps 2 and 3 apply only to the same problem: the same rule or contract, the same reason to change. Code that only looks similar is a different problem.
 
-**Code examples:** `examples/over-engineering.dart`
+Use `// KISS:` and `// KISS-DEVIATION:` marker comments only when the codebase already uses them. Related skills: `solid-principles` (KISS counterbalances SOLID ceremony) and `dry-principles` (KISS prevents premature extraction). Code examples: `examples/over-engineering.dart`.
 
-**Related skills:** `solid-principles` (KISS counterbalances SOLID ceremony), `dry-principles` (KISS prevents premature DRY extraction).
+## Four tests for a design
 
-## Core Principle
+- **Necessity:** is there a simpler way that meets the current requirements?
+- **Deletion:** if I delete this abstraction, which concrete, present-tense problem comes back? The standard layers of a layered codebase (for example Clean Architecture) pass this test through consistency and testability. The test targets extra abstractions within or beyond those layers.
+- **Explanation:** can I explain the design in one sentence without "flexible", "extensible", or "reusable"? Future-tense words point at a hypothetical need.
+- **Comprehension:** can someone new to the code understand its intent in normal onboarding time? CQRS or domain events are not over-engineering when the problem needs them; then document why.
 
-**The simplest solution that meets current requirements wins.**
+## When an abstraction is justified
 
-Complexity has two dimensions:
-1. **Too many parts**: unnecessary classes, interfaces, layers, abstractions
-2. **Too many interconnections**: excessive coupling, deep dependency chains, indirect communication paths
+Add an interface or abstraction only for a concrete, present-tense reason:
 
-## Simplicity Heuristics
+- a boundary the architecture requires, such as the Dependency Rule in a layered codebase
+- test isolation: a test uses a mock or fake through it
+- API contract stability between teams
+- 3 or more implementations exist
 
-Four concrete tests to evaluate whether a solution is too complex:
+"Maybe someday" is not a reason. KISS wins over speculative SOLID.
 
-### Comprehension Test
-> "Can someone unfamiliar with this code understand its intent within reasonable onboarding time?"
+**Extraction is knowledge-based, never count-based.** Extract at the second occurrence when the cases share knowledge (the same rule or contract, the same reason to change) and the extraction passes three guards:
 
-If the design requires deep context to understand, either the problem genuinely demands that complexity (document the rationale) or the solution has unnecessary indirection. Patterns like CQRS or domain events are not over-engineering when the problem warrants them.
+1. a clean name without "and" or "or"
+2. no boolean flag or mode parameter at birth
+3. all callers change for the same reason
 
-### Necessity Test
-> "Is there a simpler way that meets CURRENT requirements?"
-
-Emphasis on current. "We might need it later" is not a current requirement.
-
-### Deletion Test
-> "If I deleted this abstraction, what concrete problem reappears?"
-
-If you can't name a specific, present-tense problem, the abstraction isn't earning its keep. If the codebase uses a layered architecture (for example Clean Architecture), its standard layers serve structural consistency and testability; those are present-tense reasons. This test targets extra abstractions *within* or *beyond* those layers.
-
-### Explanation Test
-> "Can I explain this design in one sentence without using 'flexible', 'extensible', or 'reusable'?"
-
-If the only justification uses future-tense words, the complexity serves a hypothetical need.
-
-## Over-Engineering Anti-Patterns
-
-### Premature Polymorphism
-
-Creating an interface with a single implementation when no architectural boundary or test isolation requires it.
-
-**Justified single-implementation interfaces:** a layer or module boundary the codebase's architecture requires, test isolation, API contract stability between teams.
-
-**Detection:** Interface + single implementation + no required boundary + no test mock + no cross-team contract = premature polymorphism.
-
-### Lasagna Architecture
-
-Extra layers that add no logic: a facade between controller and service, a wrapper around a wrapper.
-
-**Important:** If the codebase has a standard layer model, this targets layers that don't belong to it, NOT thin-but-structurally-correct standard layers. A thin service is the correct shape for a simple operation.
-
-**Detection:** A class outside the codebase's standard layers where every method delegates to another class with the same signature.
-
-### Premature Abstraction (Wrong-Abstraction Guards)
-
-Extracting a shared abstraction from coincidental similarity: cases that share structure without sharing a meaningful concept.
-
-**Rule (knowledge-based, never count-based):** extract at the SECOND occurrence when the cases share knowledge (same rule or contract, same reason to change) AND the extraction passes three guards: a clean name without "and"/"or", zero boolean flags or mode params at birth, and all callers change for the same reason. Coincidental shape-similarity is never extracted, at any count. One-liners never earn the indirection. For infrastructure concerns the project has already decided on (logging, HTTP, persistence), use the framework or library the codebase already uses from the FIRST occurrence instead of hand-rolling a new mechanism.
-
-**Detection:** a shared abstraction whose name contains "and"/"or", or that needed a flag/mode parameter at birth to serve its callers.
-
-### Configuration Ceremony
-
-Making things configurable that will never be configured. Adding options, flags, and parameters for hypothetical flexibility.
-
-**Detection:** Configuration parameters that have only ever had one value. Generic type parameters instantiated at one concrete type.
-
-### Pattern Worship
-
-Applying a design pattern where a simpler construct suffices. A Strategy pattern for two stable variants. A full state-management class with immutable state objects and code generation for a single boolean toggle.
-
-**Detection:** The pattern's structural overhead exceeds the logic it contains.
-
-## The KISS-DRY Tension
-
-When KISS and DRY conflict, **prefer KISS until the duplication becomes a maintenance risk**. For wrong abstraction detection and recovery, see the `dry-principles` skill.
-
-### Decision Table
+Never extract coincidental shape similarity, at any count. A one-liner never earns the indirection. For infrastructure the project has already decided on (logging, HTTP, persistence), use its existing framework or library from the first occurrence instead of hand-rolling a new mechanism.
 
 | Situation | Action |
-|-----------|--------|
-| An existing solution already solves this problem | Reuse it; make it reusable first if it is locked inside one feature |
-| 2+ blocks that share knowledge (same rule, same reason to change) | Extract, if the extraction passes the wrong-abstraction guards above |
-| 2 blocks that only look similar | Duplicate — too early to know if they share a concept |
-| Similar structure, different business reasons | Duplicate — they will diverge (see `dry-principles` for coincidental similarity) |
-| Varies by multiple dimensions | Duplicate — shared abstraction becomes configuration nightmare |
+|---|---|
+| An existing solution already solves this problem | Reuse it. Make it reusable first if it is locked inside one feature. |
+| 2 or more blocks share knowledge | Extract, if the extraction passes the three guards |
+| 2 blocks only look similar | Duplicate: it is too early to know if they share a concept |
+| Similar structure, different business reasons | Duplicate: they will diverge |
+| Variation along several dimensions | Duplicate: a shared abstraction becomes a configuration nightmare |
 
-## The KISS-SOLID Balance
+Prefer KISS over DRY until the duplication becomes a maintenance risk. For wrong-abstraction recovery, see `dry-principles`.
 
-SOLID ceremony is justified when the problem demands it. It's over-engineering when it exceeds the problem's complexity. See `solid-principles` for when deviation from specific SOLID principles is acceptable.
+## Red flags
 
-### The Balance Point
-> "Is there a concrete, present-tense reason for this abstraction?"
+| Red flag | Anti-pattern | Severity |
+|---|---|---|
+| A class outside the codebase's standard layers where every method forwards to another class with the same signature | Lasagna architecture | High: fix before merge |
+| Interface with one implementation, and no required boundary, no test mock, no cross-team contract | Premature polymorphism | Medium |
+| Abstraction with one usage and no justification; abstract base class with one subclass | Premature abstraction | Medium |
+| Shared abstraction whose name contains "and" or "or", or that needed a flag or mode parameter at birth | Premature abstraction | Medium |
+| Design pattern where a conditional or direct call suffices: a Strategy for 2 stable variants, a state class with immutable state and code generation for one boolean | Pattern worship | Medium |
+| Generic base class shared by 2 unrelated concepts | Wrong abstraction (see `dry-principles`) | Medium |
+| Configuration parameter that has only ever had one value; generic type parameter used with one concrete type | Configuration ceremony | Low |
+| Logic inside an existing layer that could be simpler | Simplification opportunity | Low |
 
-- **Yes, a boundary the architecture requires** (for example the Dependency Rule in a layered codebase) → add the interface
-- **Yes, test isolation** → add the interface
-- **Yes, API contract stability** → add the interface
-- **Yes, 3+ implementations exist** → add the interface
-- **No, maybe someday** → don't add it (KISS wins over speculative SOLID)
+**Constructor dependencies**, when the codebase uses constructor injection: 0-5 is healthy, 6-7 means review whether responsibilities should split, 8 or more is almost certainly an SRP violation (see `solid-principles`).
 
-## KISS Applied to Architecture
+A thin layer that only delegates is not lasagna when the codebase's layer model expects that layer. A thin service is the correct shape for a simple operation.
 
-### Constructor Dependencies as Complexity Signal
+## Ceremony per complexity
 
-If the codebase uses constructor injection:
+If the codebase has a layered architecture, keep its standard layers. KISS decides how much logic lives inside each layer:
 
-- **0-5 dependencies**: healthy
-- **6-7 dependencies**: review whether responsibilities should split
-- **8+ dependencies**: almost certainly an SRP violation
-
-### Choosing the Right Level of Ceremony
-
-If the codebase uses a layered architecture, keep its standard layers. KISS applies to how much logic lives *within* each layer:
-
-| Complexity | Service Shape |
-|-----------|----------|
-| Simple CRUD, no business rules | Thin pass-through that delegates to the data layer. Still present when the codebase's layering expects it, for consistency and as a seam. |
+| Complexity | Service shape |
+|---|---|
+| Simple CRUD, no business rules | Thin pass-through to the data layer, kept for consistency and as a seam when the layering expects it |
 | One business rule | Thin service with the rule inline |
-| Orchestration across multiple concerns | Full service with injected dependencies |
+| Orchestration across several concerns | Full service with injected dependencies |
 | Cross-aggregate coordination | Domain events, if the codebase already uses them |
 
-If the codebase has no such layering, do not introduce it for a simple feature.
+If the codebase has no such layering, do not introduce it for a simple feature. Start simple inside the structure and add ceremony as complexity arrives. A service method that starts as 3 lines of delegation is a placeholder in the right place.
 
-### Start Simple Within the Structure
+## Marker comments
 
-Keep implementations simple and add ceremony as complexity grows. A service method that starts as 3 lines of delegation is fine: it's a placeholder in the right place.
+Only when the codebase already uses them. Otherwise follow its existing comment style.
 
-## Red Flags Checklist
-
-| # | Red Flag | Likely Anti-Pattern |
-|---|----------|-------------------|
-| 1 | Interface with exactly one implementation (no required boundary, no test mock) | Premature Polymorphism |
-| 2 | Generic type parameter instantiated at one concrete type | Configuration Ceremony |
-| 3 | Abstract base class with one subclass | Premature Abstraction |
-| 4 | Extra layer where every method delegates to another class | Lasagna Architecture |
-| 5 | Design pattern where a conditional or direct call suffices | Pattern Worship |
-| 6 | Configuration parameter that has only ever had one value | Configuration Ceremony |
-| 7 | Generic base class shared by 2 unrelated concepts | Wrong Abstraction (see `dry-principles`) |
-| 8 | Heavy state-management machinery (state class, immutable state object, code generation) for a single boolean | Pattern Worship |
-| 9 | 8+ constructor dependencies | Complexity signal (see `solid-principles` SRP) |
-
-## Severity Classification
-
-### High (Should fix before merge)
-- Extra forwarding-only layer, outside the codebase's standard structure, that adds zero logic
-
-### Medium (Fix soon)
-- Premature abstraction with single usage and no justification
-- Design pattern where a conditional suffices
-- Wrong abstraction forcing unrelated concerns through shared base
-
-### Low / Suggestions
-- Configuration parameter with a single known value
-- Opportunity to simplify logic within an existing layer
-
-## Documentation Convention
-
-Only when the codebase already uses these markers. Otherwise follow its existing comment style.
-
-**`// KISS:` (applying simplicity):**
 ```
 // KISS: Single implementation, no required boundary — concrete class sufficient
 // KISS: 2 stable variants, switch preferred over Strategy pattern
-```
-
-**`// KISS-DEVIATION:` (knowingly adding complexity):**
-```
 // KISS-DEVIATION: Full Strategy pattern justified — 4 payment providers with different auth flows
 // KISS-DEVIATION: Generic base class needed — 5 list views share identical pagination logic
 ```
