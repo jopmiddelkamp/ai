@@ -15,7 +15,7 @@ own system.
 | `skills/` | one directory per skill | `SKILL.md`, YAML frontmatter with `name` and `description`, then markdown instructions |
 | `output-styles/` | one file per style | YAML frontmatter with `name`, `description`, `keep-coding-instructions`, then the style rules |
 | `memory/` | the global user memory | plain markdown, no frontmatter; installs as `~/.claude/CLAUDE.md` |
-| `commands/` | one file per slash command | YAML frontmatter with `description`, then the command instructions |
+| `commands/` | one file per slash command | YAML frontmatter with `description`, then the command instructions; empty today |
 | `hooks/` | event scripts | plain executables; empty today |
 | `mcp/` | MCP server definitions | `servers.json`, a template with `${VAR}` placeholders |
 | `settings/` | reference only | never applied by a script |
@@ -48,9 +48,3 @@ rules hold for every host:
 3. Never copy a skill out of another repo. Install it as a plugin and list it
    in `settings/plugins.md`.
 4. Use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`.
-
-## The maintenance skills
-
-| Ask | Skill |
-|---|---|
-| "capture what is not in the repo yet" | `config-capture` |

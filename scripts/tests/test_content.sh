@@ -5,7 +5,7 @@ set -uo pipefail
 
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 
-for s in bro pull-request-comment-style review-pr config-capture \
+for s in bro pull-request-comment-style review-pr \
          business-coach research writing-readable-code \
          compliance dry-principles kiss-principles owasp solid-principles; do
   assert_file "$repo/skills/$s/SKILL.md" "skills/$s/SKILL.md exists"
@@ -40,7 +40,6 @@ if command -v claude >/dev/null 2>&1; then
 fi
 
 assert_file "$repo/output-styles/eli5.md" "output-styles/eli5.md exists"
-assert_file "$repo/commands/bro.md" "commands/bro.md exists"
 
 # web-prefs.sh pastes memory/CLAUDE.md as-is, so it must not open with a
 # frontmatter fence.

@@ -25,5 +25,4 @@ here, also by choice.
 
 ## Adding a note
 
-Copy the headings from any file here. Keep the order. The `config-capture`
-skill writes new files in this shape.
+Copy the headings from any file here. Keep the order.

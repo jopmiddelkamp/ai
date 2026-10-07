@@ -12,13 +12,14 @@ are not symlinked into `~/.claude/skills`.
 | `bro` | own | yes, `skills/bro` |
 | `pull-request-comment-style` | own | yes, `skills/pull-request-comment-style` |
 | `review-pr` | own | yes, `skills/review-pr` |
-| `config-capture` | own | yes, `skills/config-capture` |
 | `research` | own | yes, `skills/research` |
 | `business-coach` | own | yes, `skills/business-coach` |
 
 Removed on 2026-09-10: `sync-upstream` and `sync-mcp` (nothing is copied from
 other repos any more; other people's skills are plugins) and
 `skill-sync-reminder` (replaced by `scripts/web-skills.sh`).
+
+Removed on 2026-10-07: `config-capture`.
 
 ## Output styles
 
@@ -28,12 +29,8 @@ other repos any more; other people's skills are plugins) and
 
 ## Slash commands
 
-| Name | In repo |
-|---|---|
-| `/bro` | yes, `commands/bro.md` |
-
-`/bro` repeats the `bro` skill. Keep both: the command is the fast path, the
-skill is the one an agent finds on its own.
+None. `commands/bro.md` was removed on 2026-10-07. The `bro` skill still
+triggers on `/bro`.
 
 ## MCP servers
 
@@ -88,5 +85,4 @@ them, `ai@ai`, is this repo.
 
 ## Refreshing this document
 
-Ask the agent to "capture what is not in the repo yet". The `config-capture`
-skill finds new content and updates this table.
+Update the tables by hand when the machine gets new content.

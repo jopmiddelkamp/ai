@@ -12,14 +12,13 @@ home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" >/dev/null 2>&1
 assert_rc 0 $? "install succeeds on an empty home"
 assert_symlink_to "$home/.claude/output-styles/eli5.md" "$repo/output-styles/eli5.md" "the output style is linked"
-assert_symlink_to "$home/.claude/commands/bro.md" "$repo/commands/bro.md" "the command is linked"
 assert_symlink_to "$home/.claude/CLAUDE.md" "$repo/memory/CLAUDE.md" "the global CLAUDE.md is linked"
 assert_no_file "$home/.claude/skills/bro" "skills are not linked; the plugin delivers them"
 assert_file "$home/.claude/.ai-repo-manifest" "the manifest is written"
-if grep -qx 'commands/bro.md' "$home/.claude/.ai-repo-manifest"; then
-  _pass "the manifest lists commands/bro.md"
+if grep -qx 'CLAUDE.md' "$home/.claude/.ai-repo-manifest"; then
+  _pass "the manifest lists CLAUDE.md"
 else
-  _fail "the manifest lists commands/bro.md" "line not found"
+  _fail "the manifest lists CLAUDE.md" "line not found"
 fi
 if grep -q '^skills/' "$home/.claude/.ai-repo-manifest"; then
   _fail "the manifest lists no skills" "a skills/ line is present"
@@ -75,7 +74,7 @@ rm -rf "$home" "$fake_repo"
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --dry-run >/dev/null 2>&1
 assert_rc 0 $? "--dry-run succeeds"
-assert_no_file "$home/.claude/commands/bro.md" "--dry-run creates no link"
+assert_no_file "$home/.claude/CLAUDE.md" "--dry-run creates no link"
 assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest"
 rm -rf "$home"
 
@@ -87,7 +86,7 @@ rc=$?
 assert_rc 1 $rc "--dry-run exits 1 when a path is blocked"
 assert_contains "$out" "blocked" "--dry-run reports the block"
 assert_contains "$out" "output-styles/eli5.md" "--dry-run names the blocked path"
-assert_contains "$out" "commands/bro.md" "--dry-run keeps going past the block"
+assert_contains "$out" "CLAUDE.md" "--dry-run keeps going past the block"
 assert_eq "mine" "$(cat "$home/.claude/output-styles/eli5.md")" "--dry-run leaves the real file alone"
 assert_no_file "$home/.claude/.ai-repo-manifest" "--dry-run writes no manifest when blocked"
 
@@ -104,8 +103,8 @@ rm -rf "$home"
 home=$(make_fake_home)
 CLAUDE_DIR="$home/.claude" bash "$script" --copy >/dev/null 2>&1
 assert_rc 0 $? "--copy succeeds"
-assert_file "$home/.claude/commands/bro.md" "--copy writes a real file"
-if [ -L "$home/.claude/commands/bro.md" ]; then
+assert_file "$home/.claude/CLAUDE.md" "--copy writes a real file"
+if [ -L "$home/.claude/CLAUDE.md" ]; then
   _fail "--copy writes no symlink" "the path is still a link"
 else
   _pass "--copy writes no symlink"

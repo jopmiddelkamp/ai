@@ -103,10 +103,9 @@ replacing the old version.
 | Folder | What |
 |---|---|
 | [.claude-plugin/](.claude-plugin/) | the plugin and marketplace manifests; the plugin is named `ai` |
-| [skills/](skills/) | 6 skills, delivered by the plugin |
+| [skills/](skills/) | 11 skills, delivered by the plugin |
 | [output-styles/](output-styles/) | the ELI5-readable style |
 | [memory/](memory/) | the always-on rules, linked to `~/.claude/CLAUDE.md` |
-| [commands/](commands/) | the `/bro` command |
 | [mcp/](mcp/) | 7 MCP servers, no secrets |
 | [integrations/](integrations/) | notes on 8 third-party tools |
 | [settings/](settings/) | reference copies of settings and plugins |

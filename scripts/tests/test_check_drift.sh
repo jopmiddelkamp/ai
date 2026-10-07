@@ -22,11 +22,11 @@ CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" >/dev/
 assert_rc 0 $? "a freshly installed machine reports no drift"
 
 # Break one link.
-rm -f "$home/.claude/commands/bro.md"
+rm -f "$home/.claude/CLAUDE.md"
 out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
 rc=$?
 assert_rc 1 $rc "a removed link is drift"
-assert_contains "$out" "commands/bro.md" "the report names the missing path"
+assert_contains "$out" "missing: CLAUDE.md" "the report names the missing path"
 
 # Add an untracked skill.
 mkdir -p "$home/.claude/skills/mystery"
@@ -50,8 +50,8 @@ CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" >/dev/
 assert_rc 0 $? "a reinstalled machine is back in sync"
 
 # Replace an installed symlink with a real file whose content differs.
-rm -f "$home/.claude/commands/bro.md"
-printf 'not the real content\n' >"$home/.claude/commands/bro.md"
+rm -f "$home/.claude/CLAUDE.md"
+printf 'not the real content\n' >"$home/.claude/CLAUDE.md"
 out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
 rc=$?
 assert_rc 1 $rc "a symlink replaced by different content is drift"
@@ -59,8 +59,8 @@ assert_contains "$out" "content differs" "the report calls out the content diffe
 
 # Replace it again with a real copy whose content matches the repo -- the
 # legitimate --copy case. This must not be reported as drift.
-rm -f "$home/.claude/commands/bro.md"
-cp "$repo/commands/bro.md" "$home/.claude/commands/bro.md"
+rm -f "$home/.claude/CLAUDE.md"
+cp "$repo/memory/CLAUDE.md" "$home/.claude/CLAUDE.md"
 CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" >/dev/null 2>&1
 assert_rc 0 $? "a --copy install with matching content is not drift"
 
