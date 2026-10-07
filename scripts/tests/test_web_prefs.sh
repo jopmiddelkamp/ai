@@ -12,7 +12,7 @@ assert_contains "$out" "Dutch-style directness" "the output holds the behavior r
 assert_contains "$out" "ASD-STE100" "the output holds the style rules"
 
 case "$out" in
-  *"name: ELI5-readable"*) _fail "the output strips the frontmatter" "the name line leaked through" ;;
+  *"name: eli5"*) _fail "the output strips the frontmatter" "the name line leaked through" ;;
   *) _pass "the output strips the frontmatter" ;;
 esac
 

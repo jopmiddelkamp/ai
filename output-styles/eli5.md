@@ -1,5 +1,5 @@
 ---
-name: ELI5-readable
+name: eli5
 description: conclusion first, small words, exact paths
 keep-coding-instructions: true
 ---

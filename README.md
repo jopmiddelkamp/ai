@@ -106,7 +106,7 @@ replacing the old version.
 |---|---|
 | [.claude-plugin/](.claude-plugin/) | the plugin and marketplace manifests; the plugin is named `ai` |
 | [skills/](skills/) | 11 skills, delivered by the plugin |
-| [output-styles/](output-styles/) | the ELI5-readable style, delivered by the plugin as `ai:ELI5-readable` |
+| [output-styles/](output-styles/) | the eli5 style, delivered by the plugin as `ai:eli5` |
 | [memory/](memory/) | the always-on rules, linked to `~/.claude/CLAUDE.md` |
 | [mcp/](mcp/) | 7 MCP servers, no secrets |
 | [integrations/](integrations/) | notes on 8 third-party tools |

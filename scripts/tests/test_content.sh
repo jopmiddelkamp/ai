@@ -50,10 +50,10 @@ else
   _fail "memory/CLAUDE.md exists and has no frontmatter" "missing file, or it opens with ---"
 fi
 
-if grep -q '^name: ELI5-readable' "$repo/output-styles/eli5.md" 2>/dev/null; then
-  _pass "the output style keeps the name ELI5-readable"
+if grep -qx 'name: eli5' "$repo/output-styles/eli5.md" 2>/dev/null; then
+  _pass "the output style keeps the name eli5"
 else
-  _fail "the output style keeps the name ELI5-readable" "name line not found"
+  _fail "the output style keeps the name eli5" "name line not found"
 fi
 
 finish

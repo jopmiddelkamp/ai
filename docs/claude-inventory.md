@@ -25,7 +25,7 @@ Removed on 2026-10-07: `config-capture`.
 
 | Name | File | In repo |
 |---|---|---|
-| `ELI5-readable` | was `~/.claude/output-styles/ELI5.md` | yes, `output-styles/eli5.md`; the `ai@ai` plugin loads it as `ai:ELI5-readable` |
+| `eli5` (named `ELI5-readable` until 2026-10-07) | was `~/.claude/output-styles/ELI5.md` | yes, `output-styles/eli5.md`; the `ai@ai` plugin loads it as `ai:eli5` |
 
 ## Slash commands
 
