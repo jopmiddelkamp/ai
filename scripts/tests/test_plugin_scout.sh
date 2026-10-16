@@ -51,7 +51,14 @@ out=$(CLAUDE_PROJECT_DIR="$proj" bash "$hook")
 assert_contains "$out" "plugin-scout:" "the hook speaks when a week old run has new commits"
 
 out=$(CLAUDE_PROJECT_DIR="$tmp" bash "$hook")
-assert_eq "" "$out" "the hook is silent outside a scanned repo"
+assert_eq "" "$out" "the hook is silent outside a git repo"
+
+fresh="$tmp/fresh"
+mkdir -p "$fresh" && git -C "$fresh" init -q
+out=$(CLAUDE_PROJECT_DIR="$fresh" bash "$hook")
+assert_contains "$out" "no plugin check yet" "the hook nudges a repo that was never scanned"
+out=$(CLAUDE_PROJECT_DIR="$fresh" bash "$hook")
+assert_eq "" "$out" "the hook nudges a repo only once"
 
 assert_eq "SessionStart" "$(jq -r '.hooks | keys[]' "$repo/hooks/hooks.json")" "hooks.json registers only the SessionStart hook"
 

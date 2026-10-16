@@ -1,14 +1,23 @@
 #!/usr/bin/env bash
 # SessionStart hook: say so when a repo's plugin-scout run is due. Prints
-# nothing, so costs no context, unless the repo has a plugin-scout state
-# file older than PLUGIN_SCOUT_DAYS (default 7) and something changed since:
-# new commits, or a marketplace that refreshed after the last run.
+# nothing, so costs no context, except in two cases:
+# - a git repo that was never scanned: once per repo, remembered in
+#   ~/.claude/plugin-scout/nudged.txt;
+# - a scanned repo whose last run is older than PLUGIN_SCOUT_DAYS (default 7)
+#   and that changed since: new commits, or a marketplace that refreshed.
 set -uo pipefail
 
 dir=${CLAUDE_PROJECT_DIR:-$PWD}
 root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || exit 0
 state="$root/.claude/plugin-scout.json"
-[ -f "$state" ] && command -v jq >/dev/null || exit 0
+if [ ! -f "$state" ]; then
+  nudged="$HOME/.claude/plugin-scout/nudged.txt"
+  grep -qxF "$root" "$nudged" 2>/dev/null && exit 0
+  mkdir -p "$(dirname "$nudged")" && echo "$root" >>"$nudged"
+  echo "plugin-scout: this repo has no plugin check yet. Offer the user one line: run /ai:plugin-scout to pick the plugins to enable here. This reminder shows once per repo."
+  exit 0
+fi
+command -v jq >/dev/null || exit 0
 
 days=${PLUGIN_SCOUT_DAYS:-7}
 last=$(jq -r '.last_run_epoch // 0' "$state" 2>/dev/null)
