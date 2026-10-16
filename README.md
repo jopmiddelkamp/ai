@@ -90,7 +90,7 @@ after every change to either file.
 | Folder | What |
 |---|---|
 | [.claude-plugin/](.claude-plugin/) | the plugin and marketplace manifests; the plugin is named `ai` |
-| [skills/](skills/) | 11 skills, delivered by the plugin |
+| [skills/](skills/) | my own skills, delivered by the plugin; [docs/claude-inventory.md](docs/claude-inventory.md) lists them |
 | [output-styles/](output-styles/) | the eli5 style, delivered by the plugin as `ai:eli5` |
 | [memory/](memory/) | the always-on rules, linked to `~/.claude/CLAUDE.md` |
 | [mcp/](mcp/) | 7 MCP servers, no secrets |
@@ -98,7 +98,7 @@ after every change to either file.
 | [settings/](settings/) | reference copies of settings and plugins |
 | [hooks/](hooks/) | empty; see its README |
 | [scripts/](scripts/) | install, apply, check |
-| [docs/](docs/) | the inventory, the design, and this plan |
+| [docs/](docs/) | the inventory |
 
 ## Rules
 

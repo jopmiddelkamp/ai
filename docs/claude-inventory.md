@@ -14,6 +14,13 @@ are not symlinked into `~/.claude/skills`.
 | `review-pr` | own | yes, `skills/review-pr` |
 | `research` | own | yes, `skills/research` |
 | `business-coach` | own | yes, `skills/business-coach` |
+| `compliance` | own | yes, `skills/compliance` |
+| `decision-matrix` | own | yes, `skills/decision-matrix` |
+| `dry-principles` | own | yes, `skills/dry-principles` |
+| `kiss-principles` | own | yes, `skills/kiss-principles` |
+| `owasp` | own | yes, `skills/owasp` |
+| `solid-principles` | own | yes, `skills/solid-principles` |
+| `writing-readable-code` | own | yes, `skills/writing-readable-code` |
 
 Removed on 2026-09-10: `sync-upstream` and `sync-mcp` (nothing is copied from
 other repos any more; other people's skills are plugins) and

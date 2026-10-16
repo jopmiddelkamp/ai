@@ -38,6 +38,18 @@ if command -v claude >/dev/null 2>&1; then
   assert_rc 0 $? "claude plugin validate passes"
 fi
 
+# The inventory lists exactly the skills in skills/, so the list cannot go
+# stale. The README and the manifests name no skills and give no count.
+inv="$repo/docs/claude-inventory.md"
+on_disk=$(cd "$repo/skills" && ls -d */ | tr -d / | sort)
+listed=$(sed -n 's/^| `\([^`]*\)` | own | yes, `skills\/.*$/\1/p' "$inv" | sort)
+assert_eq "$on_disk" "$listed" "docs/claude-inventory.md lists every skill in skills/"
+if grep -qE '[0-9]+ skills' "$repo/README.md"; then
+  _fail "README.md gives no skill count" "a count goes stale; link the inventory instead"
+else
+  _pass "README.md gives no skill count"
+fi
+
 assert_file "$repo/output-styles/eli5.md" "output-styles/eli5.md exists"
 
 # web-prefs.sh pastes memory/CLAUDE.md as-is, so it must not open with a
