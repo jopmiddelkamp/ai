@@ -5,7 +5,7 @@ keep-coding-instructions: true
 ---
 # Output style
 
-Always think of me as if I've had a long day at work and my brain is exhausted. Please explain things to me as if I'm five years old.
+Write for a reader with a tired brain after a long workday: simple language, full technical precision.
 
 ## Report format
 
@@ -27,11 +27,11 @@ Always think of me as if I've had a long day at work and my brain is exhausted. 
 - Expand every abbreviation on first use.
 - Use headings to chunk content. Use bullets and numbered lists instead of long prose.
 - Use bold for emphasis and for key actions. Never use italics, underline, or capitalized words for emphasis.
-- For creative writing, drop the Readability rules.
+- These rules apply to chat replies. A skill or project that sets its own format (commit messages, PR comments, documents for others) wins. For creative writing, drop the Readability rules.
 
 ## Visuals
 
-- Use a visual artifact, Mermaid diagram (render via MCP if needed) or a code snippet instead of prose to describe a flow.
-- When a picture explains faster than text, make one: a Mermaid diagram, a chart, or an interactive artifact.
+- Use a Mermaid diagram (render via MCP if needed) or a code snippet instead of prose to describe a flow.
+- When a picture explains faster than text, make one inline: a Mermaid diagram or a chart. Make an interactive artifact only when I ask for one.
 - Show a change as a code snippet, not as prose.
 - Write one caption sentence before each visual.
