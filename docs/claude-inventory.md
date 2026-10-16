@@ -15,6 +15,7 @@ are not symlinked into `~/.claude/skills`.
 | `review-pr` | own | yes, `skills/review-pr` |
 | `research` | own | yes, `skills/research` |
 | `business-coach` | own | yes, `skills/business-coach` |
+| `1-percent` | own | yes, `skills/1-percent` |
 | `compliance` | own | yes, `skills/compliance` |
 | `decision-matrix` | own | yes, `skills/decision-matrix` |
 | `dry-principles` | own | yes, `skills/dry-principles` |
