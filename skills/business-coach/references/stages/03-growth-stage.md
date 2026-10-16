@@ -1,4 +1,11 @@
 # 🚀 STAGE 03: GROWTH STAGE
+
+## Contents
+
+- WHY THIS STAGE IS DIFFERENT
+- THE 7 STRATEGIC MOVES FROM $1M TO $10M
+- GROWTH STAGE MASTER CLAUDE PROMPT
+
 ### From $1M to $10M — The Valley of Death
 *The stage where most businesses stall forever*
 

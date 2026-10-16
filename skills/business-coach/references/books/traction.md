@@ -4,6 +4,19 @@
 **Difficulty:** Beginner-Intermediate
 **Best For:** Any business owner who feels chaos, confusion, or lack of execution
 
+## Contents
+
+- THE ONE LINE
+- WHY THIS BOOK EXISTS
+- THE CORE FRAMEWORK: EOS (Entrepreneurial Operating System)
+- THE L10 MEETING (Weekly 90 Minutes)
+- THE ACCOUNTABILITY CHART (Not Org Chart)
+- KEY TAKEAWAYS
+- APPLIED TO YOUR BUSINESS
+- PAIRS WELL WITH
+- ZOE'S TAKE
+- CLAUDE PROMPT FOR THIS BOOK
+
 ---
 
 ## THE ONE LINE

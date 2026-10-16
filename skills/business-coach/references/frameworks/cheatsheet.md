@@ -1,4 +1,19 @@
 # ⚡ QUICK REFERENCE — EVERY FRAMEWORK IN ONE PAGE
+
+## Contents
+
+- VISION & STRATEGY
+- OFFERS & SALES
+- PEOPLE & CULTURE
+- EXECUTION & SYSTEMS
+- MONEY & ACQUISITION
+- NEGOTIATION & COMMUNICATION
+- MENTAL MODELS
+- THE 10 MOST IMPORTANT QUESTIONS IN BUSINESS
+- THE READING ORDER (if starting from zero)
+- WHEN TO USE WHICH FILE
+- THE SINGLE MOST IMPORTANT INSIGHT FROM ALL 100 BOOKS
+
 ### The Cheat Sheet. Print it. Use it Daily.
 
 ---
@@ -146,7 +161,6 @@
 **"I'm at a specific stage"** → `stages/[NN-stage-name].md` (01 Idea → 05 Acquisition)
 **"I want to learn a framework"** → `overview.md` (or `deep.md` for more depth)
 **"I want a deep book dive"** → `books/[book-slug].md` (see `../index.md` for the locator)
-**"I need Claude prompts"** → `../commands-index.md`
 **"I want quick reference"** → This file
 **"I want sample answers at the quality bar"** → `../sample-answers.md`
 

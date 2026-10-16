@@ -1,4 +1,12 @@
 # 🚨 PROBLEM: I AM THE BOTTLENECK
+
+## Contents
+
+- DIAGNOSIS
+- THE ROOT CAUSE
+- THE FRAMEWORKS
+- MASTER CLAUDE PROMPT
+
 ### The Founder Bottleneck — Most Common, Most Expensive Business Problem
 *When everything runs through you and you can't scale*
 

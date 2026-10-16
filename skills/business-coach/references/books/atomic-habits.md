@@ -1,4 +1,13 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## Contents
+
+- THE ONE LINE
+- THE AGGREGATION OF MARGINAL GAINS
+- THE HABIT LOOP DEEP DIVE
+- THE IDENTITY SHIFT
+- CLAUDE PROMPT
+
 # BOOK 04: ATOMIC HABITS
 # James Clear
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━

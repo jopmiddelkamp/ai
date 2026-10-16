@@ -2,6 +2,17 @@
 
 Specific thresholds that separate "expert advice" from "vague guidance." When a benchmark applies to the user's situation, cite the number — but always with the caveat that benchmarks vary by industry, model, and stage.
 
+## Contents
+
+- Unit Economics
+- Concentration & Risk
+- Founder Time
+- Offer Quality
+- Profit & Cash
+- Strategy
+- People
+- How to use a benchmark in a response
+
 ---
 
 ## Unit Economics

@@ -1,4 +1,12 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## Contents
+
+- THE ONE LINE
+- THE TWO SYSTEMS
+- THE COGNITIVE BIASES — BUSINESS CRITICAL
+- THE PREMORTEM (Kahneman's Technique)
+
 # BOOK 53: THINKING FAST AND SLOW
 # Daniel Kahneman
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━

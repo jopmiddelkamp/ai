@@ -1,4 +1,12 @@
 # 🚨 PROBLEM: I CAN'T GET CUSTOMERS
+
+## Contents
+
+- STEP 1: DIAGNOSE THE REAL PROBLEM
+- THE FRAMEWORKS THAT FIX THIS
+- THE CUSTOMER ACQUISITION STACK
+- THE DIAGNOSTIC CLAUDE PROMPT
+
 ### The Complete Diagnostic & Treatment Plan
 *When your pipeline is dry, your offer isn't landing, or growth has stalled*
 

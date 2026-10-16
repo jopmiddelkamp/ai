@@ -1,4 +1,29 @@
 # 🧠 MASTER FRAMEWORKS — DEEP EDITION
+
+## Contents
+
+- ▶ THE FLYWHEEL vs. THE DOOM LOOP
+- ▶ THE LEVEL 5 LEADERSHIP HIERARCHY
+- ▶ THE HEDGEHOG CONCEPT — DEEP VERSION
+- ▶ THE STOCKDALE PARADOX
+- ▶ THE FULL HORMOZI UNIVERSE
+- ▶ THE FULL STORYBRAND — APPLIED
+- ▶ THE INFLUENCE WEAPONS — ALL 7
+- ▶ THE CHALLENGER SALE — DEEP EXECUTION
+- ▶ THE CULTURE CODE — HOW GREAT CULTURES ARE BUILT
+- ▶ MULTIPLIERS vs. DIMINISHERS
+- ▶ THE EXTREME OWNERSHIP FRAMEWORK — COMPLETE
+- ▶ BLUE OCEAN STRATEGY — COMPLETE TOOLKIT
+- ▶ THE INNOVATOR'S DILEMMA — COMPLETE
+- ▶ THINK AGAIN — THE RETHINKING CYCLE
+- ▶ DEEP WORK — THE COMPLETE SYSTEM
+- ▶ THE ONE THING — THE FOCUSING QUESTION
+- ▶ ATOMIC HABITS — THE COMPLETE SYSTEM
+- ▶ THE PSYCHOLOGY OF MONEY — CORE MENTAL MODELS
+- ▶ MAIN STREET MILLIONAIRE — DEEP DUE DILIGENCE
+- ▶ NEVER SPLIT THE DIFFERENCE — COMPLETE TOOLKIT
+- ▶ CRUCIAL CONVERSATIONS — THE COMPLETE FRAMEWORK
+
 ### Every Framework, Model, Mental Model & Decision Tool from All 100 Books
 *One click deeper. Real detail. Real application.*
 
@@ -1814,4 +1839,3 @@ Upside: Unlimited, unknown, life-changing
 *MASTER FRAMEWORKS DEEP EDITION — Complete*
 *Built by [@leadwithzoe](https://www.instagram.com/leadwithzoe) · improved by [@jopmiddelkamp](https://github.com/jopmiddelkamp) | The Business Consultant System*
 *Pair with `books/` for individual deep dives.*
-*Pair with: ../commands-index.md for application*

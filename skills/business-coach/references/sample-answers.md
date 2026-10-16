@@ -1,4 +1,29 @@
 # 🧪 SYSTEM TEST: 20 BUSINESS QUESTIONS
+
+## Contents
+
+- HOW TO USE THIS FILE
+- Q1: "I have a great product but nobody's buying it. What's wrong?"
+- Q2: "How do I know when to hire my first employee?"
+- Q3: "My team doesn't hold each other accountable. How do I fix it?"
+- Q4: "I'm trying to decide between two strategic directions. How do I choose?"
+- Q5: "How do I build a culture that doesn't depend on me being in the room?"
+- Q6: "I need to raise prices but I'm scared of losing clients. What do I do?"
+- Q7: "My salesperson isn't hitting their number. What do I do?"
+- Q8: "I have too many ideas and can't focus. How do I prioritize?"
+- Q9: "Should I raise money or bootstrap?"
+- Q10: "How do I get my first 10 customers?"
+- Q11: "My competitors are copying me. What do I do?"
+- Q12: "My team is burned out. What do I do?"
+- Q13: "How do I build a business that runs without me?"
+- Q14: "What's the best way to price my services?"
+- Q15: "I'm thinking about acquiring a business. How do I evaluate it?"
+- Q16: "How do I get better at making decisions quickly?"
+- Q17: "I want to build a personal brand. Where do I start?"
+- Q18: "How do I deal with a difficult competitor?"
+- Q19: "My revenue is inconsistent. How do I create predictability?"
+- Q20: "I want to sell my business in 3-5 years. What do I do now?"
+
 ### Proof That This System Can Answer Any Business Question
 *Test the system. Use these as reference answers.*
 

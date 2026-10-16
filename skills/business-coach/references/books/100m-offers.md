@@ -4,6 +4,22 @@
 **Difficulty:** Beginner
 **Best For:** Anyone whose offer isn't converting, anyone undercharging, anyone wanting to grow revenue without more leads
 
+## Contents
+
+- THE ONE LINE
+- WHY THIS BOOK EXISTS
+- THE CORE FRAMEWORK: THE VALUE EQUATION
+- THE GRAND SLAM OFFER FRAMEWORK
+- THE PRICING FRAMEWORK
+- THE GUARANTEE ARCHITECTURE
+- THE NICHE MATRIX
+- THE OFFER AUDIT (Do This Now)
+- KEY TAKEAWAYS
+- HORMOZI'S OTHER BOOKS IN THE SYSTEM
+- PAIRS WELL WITH
+- ZOE'S TAKE
+- CLAUDE PROMPT FOR THIS BOOK
+
 ---
 
 ## THE ONE LINE

@@ -2,6 +2,23 @@
 
 > "How to get strangers to want to buy your stuff" - Alex Hormozi
 
+## Contents
+
+- The Core Four Framework
+- Decision Tree
+- Lead Definitions
+- Lead Magnets
+- The Core Four Channels (Summary)
+- The Money Math: LTGP:CAC
+- Rule of 100
+- More Better New (Scaling)
+- Lead Getters (Others Get Leads For You)
+- Warning Signs
+- Rules of Thumb
+- The Order
+- When This Doesn't Apply
+- The Mindset (Many-Sided Die)
+
 ## The Core Four Framework
 
 All advertising falls into 4 categories on two axes:

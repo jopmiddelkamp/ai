@@ -16,9 +16,9 @@ One-line summary of every file in `references/`. Use this to decide what to load
 
 | File | What's in it |
 |---|---|
-| `response-format.md` | Quick-reference card for the response shape and the 7 Signature Moves. Companion to SKILL.md. |
+| `workflows.md` | 15 structured workflows (annual plan, hire or not, pricing, cash flow crisis, and more) with inputs, books, deliverables, and coaching rules, plus the menu to pick one. Load when the user wants a structured deliverable or has no clear ask. |
+| `response-format.md` | Step order for a new-idea session and an existing-business session. The response shape itself is in SKILL.md. |
 | `sample-answers.md` | 20 worked example answers at the minimum quality bar. **Read at least one example before your first response in a session** to calibrate tone and depth. |
-| `commands-index.md` | Catalog of the 21 slash commands shipped by this plugin (15 direct + 5 category + 1 master). Useful when the user asks "what can I do here?" or wants to discover a structured workflow. |
 | `synthesis.md` | The 10 universal laws that emerge from all the books — a one-page meta-summary. Use when the user wants the big picture, not a specific framework. |
 
 ## Problem playbooks
