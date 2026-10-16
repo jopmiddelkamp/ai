@@ -34,6 +34,11 @@ git -C "$proj" check-ignore -q .claude/plugin-scout.json
 assert_rc 0 $? "the state file is gitignored after the first run"
 echo '{}' | bash "$scripts/record.sh" "$proj" >/dev/null 2>&1
 assert_eq "1" "$(grep -c plugin-scout.json "$proj/.gitignore")" "a second run does not add the ignore line again"
+assert_eq "2" "$(jq '.["setup-worktree"] | length' "$proj/worktrees.json")" "worktrees.json copies both files into a new worktree"
+assert_eq "2" "$(grep -c '^.claude/' "$proj/.worktreeinclude")" ".worktreeinclude lists both files, once each"
+mkdir -p "$proj/.claude" "$tmp/linked/.claude" && echo '{"x":1}' >"$proj/.claude/settings.local.json"
+(cd "$tmp/linked" && ROOT_WORKTREE_PATH="$proj" bash -c "$(jq -r '.["setup-worktree"][0]' "$proj/worktrees.json")")
+assert_file "$tmp/linked/.claude/settings.local.json" "the setup command copies settings.local.json into the worktree"
 echo 'not json' | bash "$scripts/record.sh" "$proj" >/dev/null 2>&1
 assert_rc 1 $? "record.sh refuses input that is not JSON"
 
@@ -47,7 +52,7 @@ echo 'void main() {}' >"$proj/main.dart" && git -C "$proj" add . &&
   git -C "$proj" -c user.email=t@t -c user.name=t commit -qm dart
 out=$(bash "$scripts/scan.sh" "$proj" 1 2>&1)
 assert_contains "$out" "Commits since: 1." "the scan counts commits since the last run"
-assert_contains "$out" "New file types: dart." "the scan names new file types"
+assert_contains "$out" "New file types: dart" "the scan names new file types"
 assert_contains "$out" '`b@m` for .dart' "the scan names an uninstalled language server for a repo file type"
 if grep -q 'c@t' <<<"$out"; then
   _fail "the scan never suggests a third-party plugin" "c@t from a marketplace not owned by Anthropic appears"

@@ -47,4 +47,30 @@ if git -C "$project" rev-parse --git-dir >/dev/null 2>&1 &&
   echo ".claude/plugin-scout.json" >>"$gi"
   echo "added .claude/plugin-scout.json to .gitignore"
 fi
+
+# A new worktree is a fresh checkout without these gitignored files. Copy
+# them in: worktrees.json for gflow and Cursor, .worktreeinclude for the
+# worktrees Claude Code creates itself.
+if git -C "$project" rev-parse --git-dir >/dev/null 2>&1; then
+  for f in .claude/settings.local.json .claude/plugin-scout.json; do
+    cmd="mkdir -p .claude && if [ -f \"\$ROOT_WORKTREE_PATH/$f\" ]; then cp -p \"\$ROOT_WORKTREE_PATH/$f\" .claude/; fi"
+    cursor="$project/.cursor/worktrees.json"
+    if [ -s "$cursor" ] && jq -e 'type == "array" and length > 0' "$cursor" >/dev/null 2>&1; then
+      wt=$cursor; path='.'
+    else
+      wt="$project/worktrees.json"; path='.["setup-worktree"]'
+      [ -s "$wt" ] || echo '{"setup-worktree": []}' >"$wt"
+    fi
+    if ! jq -e --arg f "$f" "($path // []) | any(contains(\$f))" "$wt" >/dev/null 2>&1; then
+      jq --indent 2 --arg c "$cmd" "$path = (($path // []) + [\$c])" "$wt" >"$wt.tmp" && mv "$wt.tmp" "$wt" &&
+        echo "added a copy of $f to ${wt#"$project"/}"
+    fi
+    wi="$project/.worktreeinclude"
+    if ! grep -qxF "$f" "$wi" 2>/dev/null; then
+      [ -s "$wi" ] && [ -n "$(tail -c1 "$wi")" ] && echo >>"$wi"
+      echo "$f" >>"$wi"
+      echo "added $f to .worktreeinclude"
+    fi
+  done
+fi
 echo "saved $state"
