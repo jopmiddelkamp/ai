@@ -10,3 +10,6 @@ secrets/
 *.local
 *.backup-*
 tmp/
+
+# Eval run output
+evals/results/
