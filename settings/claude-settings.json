@@ -13,7 +13,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5-1[1m]",
+  "model": "opus[1m]",
   "hooks": {
     "Notification": [
       {
@@ -230,25 +230,44 @@
     "command": "bash /Users/jopmiddelkamp/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
+    "ai@ai": true,
     "autofix-bot@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "code-modernization@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true,
+    "dart-and-flutter@anthropic-plugin-directory": true,
     "elements-of-style@superpowers-marketplace": true,
+    "expo@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
     "gflow@gflow": true,
+    "github@claude-plugins-official": true,
     "gitkraken-hooks@gitkraken": true,
     "humanizer@humanizer": true,
+    "kotlin-lsp@claude-plugins-official": true,
+    "mcp-server-dev@claude-plugins-official": true,
+    "microsoft-docs@claude-plugins-official": true,
+    "onesignal@anthropic-plugin-directory": false,
+    "php-lsp@claude-plugins-official": true,
+    "playground@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
+    "sentry@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
+    "slack@claude-plugins-official": true,
     "stellar-dev@stellar-dev": true,
+    "supabase@claude-plugins-official": true,
     "superpowers-chrome@superpowers-marketplace": true,
     "superpowers-dev@superpowers-marketplace": true,
     "superpowers-developing-for-claude-code@superpowers-marketplace": true,
     "superpowers@claude-plugins-official": true,
-    "superpowers@superpowers-marketplace": true,
-    "ai@ai": true
+    "swift-lsp@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "gflow": {
@@ -295,5 +314,15 @@
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "effort": "max"
+  "modelSettings": {
+    "claude-fable-5-1": {
+      "effortLevel": "xhigh"
+    },
+    "claude-opus-5": {
+      "effortLevel": "xhigh"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
+    }
+  }
 }

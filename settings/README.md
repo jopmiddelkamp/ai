@@ -16,7 +16,7 @@ diff <(jq -S . settings/claude-settings.json) <(jq -S . ~/.claude/settings.json)
 | Key | Value | Why |
 |---|---|---|
 | `model` | `opus[1m]` | the default model |
-| `effort` / `effortLevel` | `max` | maximum reasoning effort |
+| `modelSettings.<model>.effortLevel` | `xhigh` Fable 5.1, `xhigh` Opus 5, `xhigh` Opus 5.5 | one effort per model, at each model's recommended level; no global `effort` key, so the two cannot conflict |
 | `outputStyle` | `ai:eli5` | the `ai` plugin delivers it from `output-styles/eli5.md` in this repo |
 | `permissions.defaultMode` | `auto` | fewer prompts |
 | `tui` | `fullscreen` | full screen terminal interface |
