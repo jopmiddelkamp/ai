@@ -21,6 +21,7 @@ are not symlinked into `~/.claude/skills`.
 | `dry-principles` | own | yes, `skills/dry-principles` |
 | `kiss-principles` | own | yes, `skills/kiss-principles` |
 | `owasp` | own | yes, `skills/owasp` |
+| `plugin-scout` | own | yes, `skills/plugin-scout` |
 | `solid-principles` | own | yes, `skills/solid-principles` |
 | `writing-readable-code` | own | yes, `skills/writing-readable-code` |
 
