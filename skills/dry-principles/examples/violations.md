@@ -2,6 +2,18 @@
 
 The code is Dart/Flutter for illustration only. The patterns apply in any language. `Controller` stands for whatever state holder or service class the codebase uses.
 
+## Contents
+
+- 1. Shotgun Surgery — Fee Calculation in Multiple Services
+- 2. Business Rules in Multiple Places — Validation Drift
+- 3. Magic Numbers — Scattered Constants
+- 4. Copy-Paste with Minor Variations
+- 5. Over-DRY Tests — Shared Base Class Hiding Intent
+- 6. Wrong Abstraction with Boolean Flags
+- 7. Premature Extraction with 2 Instances
+- 8. Frontend/Backend Validation Drift
+- 9. Separate Products Accepting Duplication (GOOD)
+
 ## 1. Shotgun Surgery — Fee Calculation in Multiple Services
 
 ```dart

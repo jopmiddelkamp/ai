@@ -26,6 +26,8 @@ A review without intent can only check style. It cannot answer the two questions
 
 ## Phase 1: why does the PR exist?
 
+When a subagent tool is available, run steps 2 to 5 in one subagent and have it return only the content for `review-context.md` plus the "Not fetched" list. The fetched pages stay out of the main context.
+
 1. **Fetch the PR:** `gh pr view <number> --json number,title,body,url,author,baseRefName,headRefName,files`. Without a number from the user, resolve it from the current branch:
    - `gh pr view --json number` finds the PR of the current branch. An empty `git branch --show-current` means detached HEAD: ask for the number.
    - If that fails: `gh pr list --state open --head "<branch>" --json number,title,url`. One match: use it. Several matches (same branch, different base): show them and let the user pick.

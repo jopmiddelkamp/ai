@@ -2,6 +2,23 @@
 
 OWASP defines technical security controls for application code. Compliance frameworks such as ISO 27001 and SOC 2 say *that* a control must exist; OWASP says *how to build it*. Default verification target: **ASVS 5.0 Level 2**. Apply Level 3 to the parts of a system the project or its risk profile marks as high-assurance.
 
+## Contents
+
+- Access control (A01, API1/API3/API5, ASVS V8, C1)
+- Authentication, sessions & tokens (A07, API2, ASVS V6/V7/V9, C7)
+- Injection & input/output handling (A05, ASVS V1/V2, C3)
+- Web front-end (ASVS V3, C8, cheat sheets)
+- Cryptography & secrets (A04, ASVS V11/V13, C2, M10)
+- API, resource limits & third-party consumption (API4/API6/API8/API9/API10, ASVS V4)
+- Mobile app (M1–M10, MASVS v2.1)
+- LLM features & automated actions (LLM01–LLM10)
+- Design-time (A06, C4)
+- Supply chain & CI/CD (A03, M2, C6, ASVS V15)
+- Exceptional conditions & availability (A10, ASVS V16)
+- Logging & alerting (A09, C9, ASVS V16)
+- Concrete parameters (Cheat Sheet Series)
+- Verification against this file
+
 Apply only the sections for platforms the project has. The project's existing security libraries, middleware, and conventions win over the specific techniques named here, as long as they meet the same control.
 
 Editions referenced (verified 2026-07):

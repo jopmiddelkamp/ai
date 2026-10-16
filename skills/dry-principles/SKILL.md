@@ -1,6 +1,6 @@
 ---
 name: dry-principles
-description: "Use when writing, refactoring, or reviewing code that duplicates logic, rules, constants, or models; when deciding whether to extract shared code or keep copies; when shared code grows boolean flags or conditionals; when client and server validation may drift; or when test setup feels repetitive or over-shared."
+description: "Use when writing, refactoring, or reviewing code that duplicates logic, rules, constants, or models; when deciding whether to extract shared code or keep copies; when shared code grows boolean flags or conditionals; when client and server validation may drift; or when test setup feels repetitive or over-shared. Not for routine edits that add no shared logic."
 metadata:
   optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
   optimized-on: "2026-10-07"

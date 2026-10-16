@@ -31,7 +31,7 @@ When an answer gets one citation, cite the owner of the fact: the central bank f
 
 Over-checking a settled fact hides the answer under noise. The first line of every answer names the level, for example **Level 1 quick check.**, so the user knows how deep the check went. If the user asked for `/research` and the topic is Level 1, say so and answer short.
 
-The rest of this skill is the Level 3 method.
+The rest of this skill is the Level 3 method. When a subagent tool is available, run its searches, fetches, and source tracing in subagents, and have them return only the claims, verdicts, source chains, and URLs. Write the answer in the main session.
 
 ## Level 3 method
 

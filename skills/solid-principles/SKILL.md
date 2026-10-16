@@ -1,6 +1,6 @@
 ---
 name: solid-principles
-description: "Use when designing, refactoring, or reviewing classes, interfaces, or modules; when a class has many dependencies or a vague name like Manager, Helper, or Utils; when a switch or if-else chain dispatches on type or status; when an implementation throws not-implemented errors; when an interface has many methods; or when code news up services or calls infrastructure directly."
+description: "Use when designing, refactoring, or reviewing classes, interfaces, or modules; when a class has many dependencies or a vague name like Manager, Helper, or Utils; when a switch or if-else chain dispatches on type or status; when an implementation throws not-implemented errors; when an interface has many methods; or when code news up services or calls infrastructure directly. Not for routine edits inside one function."
 metadata:
   optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
   optimized-on: "2026-10-07"

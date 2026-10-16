@@ -1,6 +1,6 @@
 ---
 name: kiss-principles
-description: "Use when writing, reviewing, or refactoring code and a design may be more complex than the current requirements need: an interface with one implementation, an extra layer that only forwards calls, a generic type or config option with one value, a design pattern for a simple case, a class with many constructor dependencies, or a choice between duplicating code and extracting a shared abstraction."
+description: "Use when writing, reviewing, or refactoring code and a design may be more complex than the current requirements need: an interface with one implementation, an extra layer that only forwards calls, a generic type or config option with one value, a design pattern for a simple case, a class with many constructor dependencies, or a choice between duplicating code and extracting a shared abstraction. Not for routine edits with no design choice in them."
 metadata:
   optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
   optimized-on: "2026-10-07"

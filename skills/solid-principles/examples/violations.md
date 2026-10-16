@@ -2,6 +2,14 @@
 
 The examples use Dart; the language is only illustrative. The order and shipping domain is an example, not a requirement. Dependencies are passed through constructors here; in a real project, wire them the way the codebase already does (DI container, provider system, composition root).
 
+## Contents
+
+- SRP — Single Responsibility Principle
+- OCP — Open/Closed Principle
+- LSP — Liskov Substitution Principle
+- ISP — Interface Segregation Principle
+- DIP — Dependency Inversion Principle
+
 ## SRP — Single Responsibility Principle
 
 ### Violation: OrderController does too much
