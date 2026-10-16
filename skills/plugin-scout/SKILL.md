@@ -1,6 +1,7 @@
 ---
 name: plugin-scout
-description: "Pick which installed Claude Code plugins to enable for the current repo, from its code and its recent sessions, and output an enabledPlugins block for .claude/settings.local.json. Use when the user says '/plugin-scout', 'which plugins should I enable here', 'set up plugins for this repo', or has plugins disabled globally and wants a per-project set. Not for finding or installing new plugins from a marketplace."
+description: "Pick which Claude Code plugins to enable for the current repo, from its code, its recent sessions, and your marketplaces, and output an enabledPlugins block for .claude/settings.local.json. Tracks each run, so a repeat run reports only what changed. Run it with /ai:plugin-scout."
+disable-model-invocation: true
 metadata:
   optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
   optimized-on: "2026-10-16"
@@ -93,4 +94,4 @@ echo '<judgment JSON>' | bash <this skill's directory>/scripts/record.sh .
 
 The judgment is `{"stack": [{"tech", "evidence", "plugins": [ids]}], "enabled": [ids], "declined": [{"plugin", "reason"}]}`. On a repeat run, start from the recorded values and change only what this run decided. `record.sh` adds the time, HEAD, file types, installed plugins, and the marketplace catalog, writes `.claude/plugin-scout.json`, and adds that file to `.gitignore` on the first run. Tell the user when it changed `.gitignore`.
 
-The `ai` plugin's SessionStart hook reads this file. When a scanned repo's last run is 7 or more days old (`PLUGIN_SCOUT_DAYS` changes the interval) and the repo has new commits or a marketplace has refreshed since, it asks you to suggest a run. It also suggests a first run, once, in a git repo without the file. If that reminder appears at the start of a session, offer the run in one line and go on with the user's request.
+The `ai` plugin's SessionStart hook reads this file. When a scanned repo's last run is 7 or more days old (`PLUGIN_SCOUT_DAYS` changes the interval) and the repo has new commits or a marketplace has refreshed since, it prints a reminder. It also prints one, once, in a git repo without the file. The skill runs only when the user types `/ai:plugin-scout`, never on its own.

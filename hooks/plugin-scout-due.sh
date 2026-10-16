@@ -14,7 +14,7 @@ if [ ! -f "$state" ]; then
   nudged="$HOME/.claude/plugin-scout/nudged.txt"
   grep -qxF "$root" "$nudged" 2>/dev/null && exit 0
   mkdir -p "$(dirname "$nudged")" && echo "$root" >>"$nudged"
-  echo "plugin-scout: this repo has no plugin check yet. Offer the user one line: run /ai:plugin-scout to pick the plugins to enable here. This reminder shows once per repo."
+  echo "plugin-scout: this repo has no plugin check yet. Tell the user in one line that they can type /ai:plugin-scout to pick the plugins to enable here; you cannot run it for them. This reminder shows once per repo."
   exit 0
 fi
 command -v jq >/dev/null || exit 0
@@ -32,4 +32,4 @@ fresh=$(find "$HOME/.claude/plugins/marketplaces" -maxdepth 3 -name marketplace.
 
 why="$commits new commits"
 [ -n "$fresh" ] && why="$why, refreshed marketplaces"
-echo "plugin-scout: the last plugin check for this repo was $age days ago ($why). Offer the user one line: run /ai:plugin-scout to check for new plugins."
+echo "plugin-scout: the last plugin check for this repo was $age days ago ($why). Tell the user in one line that they can type /ai:plugin-scout to check for new plugins; you cannot run it for them."

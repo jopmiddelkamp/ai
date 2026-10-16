@@ -1,10 +1,10 @@
 ---
 max_turns: 8
 allowed_tools: [Skill]
-tags: [plugin-scout, natural]
+tags: [plugin-scout, slash]
 ---
 
-Which plugins should I enable for this repo? I keep every plugin disabled in ~/.claude/settings.json and enable them per repo. Here is what I collected.
+/ai:plugin-scout Which plugins should I enable for this repo? I keep every plugin disabled in ~/.claude/settings.json and enable them per repo. Here is what I collected.
 
 Scan output:
 
