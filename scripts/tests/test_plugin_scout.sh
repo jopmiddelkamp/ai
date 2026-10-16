@@ -11,11 +11,15 @@ hook="$repo/hooks/plugin-scout-due.sh"
 tmp=$(mktemp -d)
 export HOME="$tmp/home"
 
-# A fake plugin setup: one marketplace with two plugins, one installed.
-mkdir -p "$HOME/.claude/plugins/marketplaces/m/.claude-plugin"
-printf '{"m":{"installLocation":"%s"}}\n' "$HOME/.claude/plugins/marketplaces/m" >"$HOME/.claude/plugins/known_marketplaces.json"
-printf '{"plugins":[{"name":"a","description":"A"},{"name":"b","lspServers":{"x":{"command":"x","extensionToLanguage":{".dart":"dart"}}}}]}\n' \
+# A fake plugin setup: an Anthropic-owned marketplace with two plugins, one
+# installed, and a third-party marketplace with a language server.
+mkdir -p "$HOME/.claude/plugins/marketplaces/m/.claude-plugin" "$HOME/.claude/plugins/marketplaces/t/.claude-plugin"
+printf '{"m":{"installLocation":"%s"},"t":{"installLocation":"%s"}}\n' \
+  "$HOME/.claude/plugins/marketplaces/m" "$HOME/.claude/plugins/marketplaces/t" >"$HOME/.claude/plugins/known_marketplaces.json"
+printf '{"owner":{"name":"Anthropic"},"plugins":[{"name":"a","description":"A"},{"name":"b","lspServers":{"x":{"command":"x","extensionToLanguage":{".dart":"dart"}}}}]}\n' \
   >"$HOME/.claude/plugins/marketplaces/m/.claude-plugin/marketplace.json"
+printf '{"owner":{"name":"Someone"},"plugins":[{"name":"c","lspServers":{"x":{"command":"x","extensionToLanguage":{".dart":"dart"}}}}]}\n' \
+  >"$HOME/.claude/plugins/marketplaces/t/.claude-plugin/marketplace.json"
 printf '{"plugins":{"a@m":[{"installPath":"%s"}]}}\n' "$tmp/none" >"$HOME/.claude/plugins/installed_plugins.json"
 
 proj="$tmp/proj"
@@ -25,7 +29,7 @@ mkdir -p "$proj" && cd "$proj" && git init -q && echo x >a.ts && git add . &&
 out=$(echo '{"stack":[],"enabled":["a@m"],"declined":[]}' | bash "$scripts/record.sh" "$proj" 2>&1)
 assert_rc 0 $? "record.sh saves a run"
 assert_file "$proj/.claude/plugin-scout.json" "the state file is written"
-assert_eq "a@m,b@m" "$(jq -r '.known_plugins | join(",")' "$proj/.claude/plugin-scout.json")" "the state lists the marketplace catalog"
+assert_eq "a@m,b@m,c@t" "$(jq -r '.known_plugins | join(",")' "$proj/.claude/plugin-scout.json")" "the state lists the marketplace catalog"
 git -C "$proj" check-ignore -q .claude/plugin-scout.json
 assert_rc 0 $? "the state file is gitignored after the first run"
 echo '{}' | bash "$scripts/record.sh" "$proj" >/dev/null 2>&1
@@ -45,6 +49,11 @@ out=$(bash "$scripts/scan.sh" "$proj" 1 2>&1)
 assert_contains "$out" "Commits since: 1." "the scan counts commits since the last run"
 assert_contains "$out" "New file types: dart." "the scan names new file types"
 assert_contains "$out" '`b@m` for .dart' "the scan names an uninstalled language server for a repo file type"
+if grep -q 'c@t' <<<"$out"; then
+  _fail "the scan never suggests a third-party plugin" "c@t from a marketplace not owned by Anthropic appears"
+else
+  _pass "the scan never suggests a third-party plugin"
+fi
 
 jq '.last_run_epoch -= 8 * 86400' "$proj/.claude/plugin-scout.json" >"$tmp/s" && mv "$tmp/s" "$proj/.claude/plugin-scout.json"
 out=$(CLAUDE_PROJECT_DIR="$proj" bash "$hook")

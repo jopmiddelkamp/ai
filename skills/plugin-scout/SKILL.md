@@ -41,11 +41,13 @@ Read the codebase. Look at the manifests and config (`package.json`, `pubspec.ya
 
 Give each plugin one verdict with one piece of evidence: a file you saw, or a count from the scan.
 
+**Trusted sources only.** Add a plugin only when its `source` in the scan is `anthropic` (Anthropic or one of its partners, from an Anthropic-owned marketplace) or `own` (the user's own marketplaces). Never add a `third-party` plugin, whatever the evidence, and do not mention it. A `third-party` plugin that this repo enables goes under "Plugins to Remove", with "Why: third-party source".
+
 - **Enable** when the repo uses the stack or service, or the sessions show the user calling its parts. Usage in sessions is the strongest evidence. A plugin the user called several times stays in, even when the code does not show the stack.
 - **LSP plugins** cost no description context and give diagnostics after edits. Enable one when that language makes up real code in the repo. If the scan marks the binary `(missing)`, the plugin does nothing: name the install command in the notes instead of enabling it, or enable it and say the binary must be installed first.
 - **MCP-only plugins** are cheap, because tool search defers their tools. Enable one when the repo talks to that service. Note any login or env var the server needs.
 - **Heavy plugins** (thousands of description characters, or hooks on `SessionStart` or `UserPromptSubmit`, which inject text every session) need direct evidence: the stack is in the repo, or the sessions show use. "Might be handy" is not enough. For a heavy plugin on the shortlist, run `claude plugin details <id>` and report its always-on token estimate.
-- **Duplicates**: when the same plugin is installed from two marketplaces (the scan shows the same component counts under two ids), enable one and say which.
+- **Duplicates**: when the same plugin is installed from two marketplaces (the scan shows the same component counts under two ids), enable the one whose source is `anthropic`.
 - **General-purpose plugins** (code review, writing, skill authoring) go in only when the sessions show use in this repo. The user can turn one on for a single session when needed.
 - `ai@ai` holds the user's own skills, this one included. Enable it when the sessions here used one of its skills.
 - Ignore `mcp__claude_ai_*` servers in the usage list. They are claude.ai connectors, not plugins.

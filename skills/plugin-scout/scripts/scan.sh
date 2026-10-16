@@ -37,11 +37,28 @@ meta() {
   jq -cn --argjson a "$entry" --argjson b "$own" '$a * $b'
 }
 
-# Every plugin in every known marketplace: id, category, installed or not,
+# Trusted sources: marketplaces whose manifest names Anthropic as owner
+# (Anthropic's own plugins and its partners'), Anthropic's plugin directory,
+# and the user's own marketplaces in PLUGIN_SCOUT_OWN (default: ai gflow).
+anthropic_mkts=$(jq -r 'to_entries[] | "\(.key)\t\(.value.installLocation)"' "$known" 2>/dev/null |
+  while IFS=$'\t' read -r mkt loc; do
+    [ "$(jq -r '.owner.name // ""' "$loc/.claude-plugin/marketplace.json" 2>/dev/null)" = Anthropic ] && echo "$mkt"
+  done; echo anthropic-plugin-directory)
+own_mkts=${PLUGIN_SCOUT_OWN:-ai gflow}
+source_of() { # plugin id -> anthropic, own, or third-party
+  local mkt=${1#*@}
+  if grep -qxF "$mkt" <<<"$anthropic_mkts"; then echo anthropic
+  elif [[ " $own_mkts " == *" $mkt "* ]]; then echo own
+  else echo third-party; fi
+}
+
+# Every plugin in the Anthropic marketplaces: id, category, installed or not,
 # LSP file extensions, description. Too long to print; the skill greps it.
+# Third-party marketplaces are left out, so nothing from them is suggested.
 catalog="${TMPDIR:-/tmp}/plugin-scout-catalog.tsv"
 jq -r 'to_entries[] | "\(.key)\t\(.value.installLocation)"' "$known" 2>/dev/null |
 while IFS=$'\t' read -r mkt loc; do
+  grep -qxF "$mkt" <<<"$anthropic_mkts" || continue
   jq -r --arg m "$mkt" --slurpfile inst "$installed" '.plugins[]? | "\(.name)@\($m)" as $id |
     [ $id, (.category // "-"),
       (if ($inst[0].plugins | has($id)) then "installed" else "-" end),
@@ -103,13 +120,15 @@ fi
 
 echo "# Installed plugins"
 echo
-echo "user: the value in ~/.claude/settings.json. desc-chars: description"
+echo "source: anthropic (Anthropic or a partner), own (the user's), or"
+echo "third-party (never recommend). user: the value in ~/.claude/settings.json."
+echo "desc-chars: description"
 echo "characters of skills, agents and commands, which load every session."
 echo "Hooks on SessionStart or UserPromptSubmit can inject far more."
 echo
-printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n' \
-  plugin user skills agents commands mcp hooks lsp desc-chars
-echo '|---|---|---|---|---|---|---|---|---|'
+printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n' \
+  plugin source user skills agents commands mcp hooks lsp desc-chars
+echo '|---|---|---|---|---|---|---|---|---|---|'
 rows=$(jq -r '.plugins | to_entries[] | "\(.key)\t\(.value[0].installPath)"' "$installed" | sort)
 while IFS=$'\t' read -r id path; do
   [ -d "$path" ] || continue
@@ -132,8 +151,8 @@ while IFS=$'\t' read -r id path; do
       if command -v "$bin" >/dev/null; then echo "$bin"; else echo "$bin(missing)"; fi
     done | paste -sd, -)
   chars=$(desc_chars "${skills[@]}" "${agents[@]}" "${commands[@]}")
-  printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n' \
-    "$id" "$user" "$ns" "$na" "$nc" "${mcp:--}" "${hooks:--}" "${lsp:--}" "$chars"
+  printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n' \
+    "$id" "$(source_of "$id")" "$user" "$ns" "$na" "$nc" "${mcp:--}" "${hooks:--}" "${lsp:--}" "$chars"
 done <<<"$rows"
 
 echo
