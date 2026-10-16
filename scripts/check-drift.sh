@@ -78,6 +78,19 @@ else
   note "no plugin registry at $INSTALLED; run: claude plugin marketplace add jopmiddelkamp/ai && claude plugin install ai@ai"
 fi
 
+# 4. The settings that shape every session, against the reference copy. Only
+# keys that never hold a secret, so this stays safe to print.
+printf '\nsettings\n'
+LIVE_SETTINGS="$CLAUDE_DIR/settings.json"
+REF_SETTINGS="$REPO_ROOT/settings/claude-settings.json"
+if [ -f "$LIVE_SETTINGS" ] && command -v jq >/dev/null 2>&1; then
+  for path in .model .effort .effortLevel .outputStyle .modelSettings '.enabledPlugins | keys'; do
+    rv=$(jq -cS "$path // \"-\"" "$REF_SETTINGS")
+    lv=$(jq -cS "$path // \"-\"" "$LIVE_SETTINGS")
+    [ "$rv" = "$lv" ] || note "$path differs (repo: $rv, machine: $lv); see settings/README.md"
+  done
+fi
+
 printf '\n'
 if [ "$DRIFT" -eq 0 ]; then
   printf 'in sync\n'

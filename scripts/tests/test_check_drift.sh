@@ -69,5 +69,17 @@ rc=$?
 assert_rc 1 $rc "a missing plugin registry is drift"
 assert_contains "$out" "ai@ai" "the report names the plugin"
 
+# A machine whose settings match the reference copy is in sync; a changed
+# effort level is drift, and the report names the key.
+printf '{"plugins":{"ai@ai":[{"scope":"user","version":"test"}]}}\n' >"$home/.claude/plugins/installed_plugins.json"
+cp "$repo/settings/claude-settings.json" "$home/.claude/settings.json"
+CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" >/dev/null 2>&1
+assert_rc 0 $? "settings that match the reference copy are in sync"
+jq '.effortLevel = "low"' "$home/.claude/settings.json" >"$home/x" && mv "$home/x" "$home/.claude/settings.json"
+out=$(CLAUDE_DIR="$home/.claude" CLAUDE_JSON="$home/.claude.json" bash "$drift" 2>&1)
+rc=$?
+assert_rc 1 $rc "a changed effort level is drift"
+assert_contains "$out" ".effortLevel differs" "the report names the changed key"
+
 rm -rf "$home" "$good_env"
 finish
