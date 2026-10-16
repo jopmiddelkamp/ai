@@ -42,8 +42,10 @@ rules hold for every host:
 
 ## Rules you must follow when you change this repo
 
-1. Run `bash scripts/tests/run.sh`. It must print `ALL TESTS PASSED`.
-2. Run `bash scripts/check-secrets.sh`. It must print `clean`.
-3. Never copy a skill out of another repo. Install it as a plugin and list it
+1. Run `bash scripts/check.sh`. It must print `ALL TESTS PASSED` and
+   `clean`. The pre-commit hook runs the same checks. For a long task, use
+   `/goal bash scripts/check.sh passes and its output is shown; memory/
+   unchanged; or stop after 15 turns`.
+2. Never copy a skill out of another repo. Install it as a plugin and list it
    in `settings/plugins.md`.
-4. Use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`.
+3. Use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`.
