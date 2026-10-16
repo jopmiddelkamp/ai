@@ -96,7 +96,7 @@ after every change to either file.
 | [mcp/](mcp/) | 7 MCP servers, no secrets |
 | [integrations/](integrations/) | notes on 8 third-party tools |
 | [settings/](settings/) | reference copies of settings and plugins |
-| [hooks/](hooks/) | empty; see its README |
+| [hooks/](hooks/) | the plugin's hooks: a weekly plugin-scout reminder |
 | [scripts/](scripts/) | install, apply, check |
 | [docs/](docs/) | the inventory |
 

@@ -1,16 +1,22 @@
 # Hooks
 
-This folder is empty on purpose. The owner writes no hooks of their own today.
+This repo is the `ai` plugin, so `hooks/hooks.json` here is the plugin's hook
+file. Claude Code runs it in every session where `ai@ai` is enabled.
 
-Every hook in `~/.claude/settings.json` belongs to another app:
+| Hook | Event | What it does |
+|---|---|---|
+| `plugin-scout-due.sh` | `SessionStart` (startup) | Prints one line when a repo's last `plugin-scout` run is 7+ days old (`PLUGIN_SCOUT_DAYS`) and the repo has new commits or a marketplace has refreshed since. Prints nothing otherwise, and nothing in repos that were never scanned. |
+
+The other hooks in `~/.claude/settings.json` belong to other apps:
 
 - `~/.pulser/hooks/pulser-hook.sh` — see [../integrations/pulser.md](../integrations/pulser.md)
 - `~/.pixel-agents/hooks/claude-hook.js` — not tracked, by choice
 
-## Adding a hook of your own
+## Adding a hook
 
-1. Write the script here, for example `hooks/my-hook.sh`.
-2. Make it executable: `chmod +x hooks/my-hook.sh`.
-3. Add the entry to `~/.claude/settings.json` by hand, pointing at the repo
-   path. `scripts/install.sh` does not touch `settings.json`.
-4. Refresh the reference copy: `cp ~/.claude/settings.json settings/claude-settings.json`.
+1. Write the script here, for example `hooks/my-hook.sh`, and make it
+   executable: `chmod +x hooks/my-hook.sh`.
+2. Add it to `hooks/hooks.json`, with the command
+   `bash "${CLAUDE_PLUGIN_ROOT}/hooks/my-hook.sh"`.
+3. Keep `SessionStart` and `UserPromptSubmit` hooks silent by default: what
+   they print goes into the context of every session.

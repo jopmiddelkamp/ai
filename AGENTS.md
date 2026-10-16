@@ -15,7 +15,7 @@ own system.
 | `skills/` | one directory per skill | `SKILL.md`, YAML frontmatter with `name` and `description`, then markdown instructions |
 | `output-styles/` | one file per style | YAML frontmatter with `name`, `description`, `keep-coding-instructions`, then the style rules; the plugin loads it as `ai:<name>` |
 | `memory/` | the global user memory | plain markdown, no frontmatter; installs as `~/.claude/CLAUDE.md` |
-| `hooks/` | event scripts | plain executables; empty today |
+| `hooks/` | the plugin's hooks | `hooks.json` plus the scripts it runs; the plugin loads it like `skills/` |
 | `mcp/` | MCP server definitions | `servers.json`, a template with `${VAR}` placeholders |
 | `settings/` | reference only | never applied by a script |
 | `integrations/` | notes on third-party tools | markdown with fixed headings |

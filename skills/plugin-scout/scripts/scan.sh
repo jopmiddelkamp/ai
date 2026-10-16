@@ -37,6 +37,70 @@ meta() {
   jq -cn --argjson a "$entry" --argjson b "$own" '$a * $b'
 }
 
+# Every plugin in every known marketplace: id, category, installed or not,
+# LSP file extensions, description. Too long to print; the skill greps it.
+catalog="${TMPDIR:-/tmp}/plugin-scout-catalog.tsv"
+jq -r 'to_entries[] | "\(.key)\t\(.value.installLocation)"' "$known" 2>/dev/null |
+while IFS=$'\t' read -r mkt loc; do
+  jq -r --arg m "$mkt" --slurpfile inst "$installed" '.plugins[]? | "\(.name)@\($m)" as $id |
+    [ $id, (.category // "-"),
+      (if ($inst[0].plugins | has($id)) then "installed" else "-" end),
+      ([.lspServers // {} | .[] | .extensionToLanguage // {} | keys[]] | unique | join(",")),
+      ((.description // "-") | gsub("\\s+"; " ") | .[0:160]) ] | @tsv' \
+    "$loc/.claude-plugin/marketplace.json" 2>/dev/null
+done | sort -u >"$catalog"
+
+# File extensions in the repo, lower case, with how many files have each.
+repo_exts=$(git -C "$project" ls-files 2>/dev/null | sed -n 's/^.*[^/]\.\([A-Za-z0-9]*\)$/\1/p' | tr 'A-Z' 'a-z' | sort | uniq -c | sort -rn)
+
+state="$project/.claude/plugin-scout.json"
+if [ -f "$state" ]; then
+  echo "# Since the last run"
+  echo
+  last=$(jq -r '.last_commit // ""' "$state")
+  echo "Last run: $(jq -r .last_run "$state"), at commit ${last:0:12}."
+  news=0
+  if [ -n "$last" ] && git -C "$project" cat-file -e "$last" 2>/dev/null; then
+    commits=$(git -C "$project" rev-list --count "$last"..HEAD)
+  else
+    commits=$(git -C "$project" rev-list --count --since="$(jq -r .last_run "$state")" HEAD 2>/dev/null || echo 0)
+    last=$(git -C "$project" rev-list -n1 --before="$(jq -r .last_run "$state")" HEAD 2>/dev/null)
+  fi
+  echo "Commits since: $commits."
+  if [ "$commits" -gt 0 ] && [ -n "$last" ]; then
+    echo
+    echo "## Files added or changed since (dependency and config files first)"
+    echo
+    git -C "$project" diff --name-status "$last" HEAD |
+      awk '{print ($2 ~ /(package\.json|pubspec\.yaml|Cargo\.toml|go\.mod|composer\.json|\.csproj|Package\.swift|build\.gradle|requirements|pyproject|Gemfile|Dockerfile|\.ya?ml$|\.toml$)/ ? 0 : 1) "\t" $0}' |
+      sort -k1,1 -s | cut -f2- | head -60
+  fi
+  new_exts=$(jq -r '.extensions[]?' "$state" | sort -u | comm -13 - <(awk '{print $2}' <<<"$repo_exts" | sort -u) | paste -sd, -)
+  echo
+  echo "New file types: ${new_exts:-none}."
+  new_inst=$(jq -r '.installed[]?' "$state" | sort -u | comm -13 - <(jq -r '.plugins | keys[]' "$installed" | sort -u) | paste -sd, -)
+  echo "Newly installed plugins: ${new_inst:-none}."
+  new_cat=$(jq -r '.known_plugins[]?' "$state" | sort -u | comm -13 - <(cut -f1 "$catalog" | sort -u))
+  echo "New plugins in your marketplaces: $(printf '%s' "$new_cat" | grep -c . || true)."
+  if [ -n "$new_cat" ]; then
+    grep -F -f <(printf '%s\n' "$new_cat") "$catalog" | awk -F'\t' '{print "- `" $1 "` (" $2 "): " $5}'
+  fi
+  [ "$commits" -gt 0 ] || [ -n "$new_exts" ] || [ -n "$new_inst" ] || [ -n "$new_cat" ] && news=1
+  echo
+  if [ "$news" -eq 0 ]; then
+    echo "NOTHING NEW since the last run."
+  else
+    echo "CHANGES since the last run: check them against the stack below."
+  fi
+  echo
+  echo "## Stack and plugins recorded last run"
+  echo
+  jq -r '.stack[]? | "- \(.tech) (\(.evidence)): \(.plugins | join(", "))"' "$state"
+  echo "- enabled: $(jq -r '.enabled | join(", ")' "$state")"
+  jq -r '.declined[]? | "- declined \(.plugin): \(.reason)"' "$state"
+  echo
+fi
+
 echo "# Installed plugins"
 echo
 echo "user: the value in ~/.claude/settings.json. desc-chars: description"
@@ -97,6 +161,23 @@ for f in "$project/.claude/settings.json" "$project/.claude/settings.local.json"
   fi
 done
 
+echo
+echo "# Marketplace catalog"
+echo
+echo "$(wc -l <"$catalog" | tr -d ' ') plugins in $catalog"
+echo "(columns: id, category, installed, LSP extensions, description)."
+echo
+echo "## Language servers for this repo's file types that are not installed"
+echo
+awk '{print $2}' <<<"$repo_exts" | head -15 | while read -r ext; do
+  awk -F'\t' -v e="$ext" '$3 != "installed" && $4 != "" { n = split($4, xs, ","); for (i = 1; i <= n; i++) if (xs[i] == "." e) print "- `" $1 "` for ." e }' "$catalog"
+done | sort -u
+
+echo
+echo "## Top file types in this repo"
+echo
+head -15 <<<"$repo_exts" | awk '{print "- ." $2 ": " $1 " files"}'
+
 # Claude Code stores transcripts under the project path with every
 # non-alphanumeric character turned into a dash.
 tdir="$HOME/.claude/projects/$(printf '%s' "$project" | sed 's/[^A-Za-z0-9]/-/g')"
@@ -107,7 +188,12 @@ if [ ! -d "$tdir" ]; then
   echo "No transcripts at $tdir."
   exit 0
 fi
-files=$(ls -t "$tdir"/*.jsonl 2>/dev/null | head -n "$sessions")
+if [ -f "$state" ]; then
+  # A repeat run reads only the sessions since the last one.
+  files=$(find "$tdir" -maxdepth 1 -name '*.jsonl' -newer "$state" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -n "$sessions")
+else
+  files=$(ls -t "$tdir"/*.jsonl 2>/dev/null | head -n "$sessions")
+fi
 if [ -z "$files" ]; then
   echo "No transcripts at $tdir."
   exit 0
