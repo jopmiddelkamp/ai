@@ -5,9 +5,8 @@ The Claude desktop app for macOS. Bundle id `com.anthropic.claudefordesktop`,
 version 1.40609.0 on 2026-09-01.
 
 ## How it touches the AI setup
-It is a separate store from Claude Code. Skills uploaded to the claude.ai
-profile do **not** sync with the skills in this repo. After a skill changes,
-run `bash scripts/web-skills.sh <name>` and upload the zip by hand.
+It installs the skills from this repo as the `ai@ai` plugin, the same as
+Claude Code. Nothing is zipped or uploaded by hand.
 
 `Claude Code URL Handler.app` in `~/Applications` handles `claude://` links. It
 comes with Claude Code.
@@ -22,5 +21,5 @@ None on disk that this repo manages.
 https://claude.ai/download
 
 ## How to reinstall
-Install the app and sign in. Then upload any skill you want available in the
-app; this repo stays the source of truth.
+Install the app, sign in, and install the `ai@ai` plugin; this repo stays the
+source of truth.

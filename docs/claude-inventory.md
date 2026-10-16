@@ -17,7 +17,7 @@ are not symlinked into `~/.claude/skills`.
 
 Removed on 2026-09-10: `sync-upstream` and `sync-mcp` (nothing is copied from
 other repos any more; other people's skills are plugins) and
-`skill-sync-reminder` (replaced by `scripts/web-skills.sh`).
+`skill-sync-reminder` (the skills now ship as the `ai@ai` plugin).
 
 Removed on 2026-10-07: `config-capture`.
 
