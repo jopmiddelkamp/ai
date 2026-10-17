@@ -18,6 +18,7 @@ are not symlinked into `~/.claude/skills`.
 | `1-percent` | own | yes, `skills/1-percent` |
 | `compliance` | own | yes, `skills/compliance` |
 | `decision-matrix` | own | yes, `skills/decision-matrix` |
+| `deepen` | own | yes, `skills/deepen` |
 | `dry-principles` | own | yes, `skills/dry-principles` |
 | `kiss-principles` | own | yes, `skills/kiss-principles` |
 | `owasp` | own | yes, `skills/owasp` |

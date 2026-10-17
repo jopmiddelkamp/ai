@@ -1,6 +1,6 @@
 ---
 name: brief
-description: "Interview the user for a task brief (the task, the guardrails, the definition of done) with suggested guardrails and done criteria, then deepen the brief the way a top professional in the field would, then execute it. Use when the user says '/brief', 'brief me', 'interview me for this task', 'task, guardrails, done', or asks for a deeper version of a task before starting it. Not for quick questions or one-line fixes the user wants done right away."
+description: "Interview the user for a task brief (the task, the guardrails, the definition of done) with suggested guardrails and done criteria, then deepen the brief the way a top professional in the field would, then execute it. Use when the user says '/brief', 'brief me', 'interview me for this task', 'task, guardrails, done', or wants to agree on a task before it starts. For only deepening a prompt, use the deepen skill. Not for quick questions or one-line fixes the user wants done right away."
 metadata:
   optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
   optimized-on: "2026-10-16"
@@ -54,16 +54,9 @@ Done:       <bullets, each with how it is checked>
 
 ## 2. Deepen
 
-The user wants a deeper version of this task, not a bigger one. Deeper means better inputs, better methods, and an outside check. It does not mean more deliverables or wider scope; the agreed guardrails still hold.
+Run the `deepen` skill (`ai:deepen`) on the approved brief. If the Skill tool cannot load it, read `skills/deepen/SKILL.md` in this plugin and follow it. The agreed guardrails still hold.
 
-First name the field the task belongs to (financial reporting, market research, backend engineering, copywriting). Then answer these four, specific to this task, in a few lines each:
-
-1. **What a top professional would do that the user is not asking for.** The step a senior practitioner in that field would take that is missing from the brief.
-2. **The rawest material they would start from.** The primary source instead of the digested one: the raw export instead of the dashboard, the transaction log instead of the summary, the interview recordings instead of the notes, the code instead of the docs. Say whether you can reach it in this session.
-3. **The specific methods and tools they would use.** Name them (a reconciliation, a pivot from the raw rows, a property-based test, a cohort analysis, a style guide), not "a rigorous approach".
-4. **What, other than you or the user, would show the result is right.** A test, a source document, a third-party tool, a number that must reconcile, an expert, a market reaction.
-
-Then rewrite the brief to ask for exactly that: the same task with the raw input, the methods, and the outside check folded in. Answer 4 becomes a criterion under Done. Show the rewritten brief in the same three-part shape, mark what changed from the version in phase 1, and ask for approval once. If the user rejects a change, drop it and keep the rest.
+Show the rewritten brief in the same three-part shape, with the changes marked, and ask for approval once. If the user rejects a change, drop it and keep the rest.
 
 ## 3. Execute
 

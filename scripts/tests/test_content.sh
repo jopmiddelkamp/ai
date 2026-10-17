@@ -5,7 +5,7 @@ set -uo pipefail
 
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 
-for s in bro brief pull-request-comment-style review-pr \
+for s in bro brief deepen pull-request-comment-style review-pr \
          business-coach research writing-readable-code \
          compliance dry-principles kiss-principles owasp solid-principles; do
   assert_file "$repo/skills/$s/SKILL.md" "skills/$s/SKILL.md exists"
