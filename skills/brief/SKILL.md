@@ -14,13 +14,25 @@ Work in three phases. Do not start a phase before the user has agreed to the res
 
 ## 1. Interview
 
-Ask one question per turn, in this order. Use `AskUserQuestion` when it is available; otherwise ask in plain text with numbered suggestions. If the user already gave an answer in their request, show it back as a one-line restatement and move on.
+Ask one question per turn, in this order. Use `AskUserQuestion` when it is available; otherwise ask in plain text with numbered suggestions. The task question is the exception: it never gets suggestions.
+
+After every answer the user gives, in every step, restate it as "As I understood, you want <X>. Right?" and wait for a yes before you go on. If the user corrects you, restate the corrected version the same way. Repeat until the user says yes. Never act on an answer the user has not confirmed.
 
 ### Task
 
-Ask: "What is the task you want me to execute?"
+The task must come from the user, in their own words. If the request already holds a task, use that text. Otherwise ask, in plain text and not with `AskUserQuestion`: "What is the task you want me to execute?" Do not offer options, and do not guess a task from the working tree, recent commits, or open files.
 
-Restate it in one sentence: the action, the input it works from, and the output it produces ("This week's client report from the CRM export"). If the input or the output is unclear, ask for that one thing before going on. Read the files or sources the task names, so the next suggestions fit the real material.
+Check the task against this bar for a professional task description:
+
+- **Action**: one clear verb for what must happen.
+- **Input**: the files, data, or sources the work starts from.
+- **Output**: the deliverable, with its form and its place.
+- **Purpose**: who uses the output, or why the task exists.
+- **Scope**: where the task stops, when the boundary is not obvious.
+
+If one item is missing or vague, ask for that one item in plain text, with a short reason why it matters. Merge the answer into the task and restate the full task. Loop until all items are clear. Then ask for the confirmation above.
+
+Read the files or sources the task names, so the next suggestions fit the real material.
 
 ### Guardrails
 
