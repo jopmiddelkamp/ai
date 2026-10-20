@@ -5,7 +5,11 @@
 #   ~/.claude/plugin-scout/nudged.txt;
 # - a scanned repo whose last run is older than PLUGIN_SCOUT_DAYS (default 7)
 #   and that changed since: new commits, or a marketplace that refreshed.
+# It is always silent inside `claude plugin eval`, which sets
+# CLAUDE_CODE_EVAL_CONFINED: there the note would end up in every graded reply.
 set -uo pipefail
+
+[ -n "${CLAUDE_CODE_EVAL_CONFINED:-}" ] && exit 0
 
 dir=${CLAUDE_PROJECT_DIR:-$PWD}
 root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || exit 0

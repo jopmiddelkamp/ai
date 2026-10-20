@@ -5,7 +5,7 @@ file. Claude Code runs it in every session where `ai@ai` is enabled.
 
 | Hook | Event | What it does |
 |---|---|---|
-| `plugin-scout-due.sh` | `SessionStart` (startup) | Prints one line when a repo's last `plugin-scout` run is 7+ days old (`PLUGIN_SCOUT_DAYS`) and the repo has new commits or a marketplace has refreshed since. In a git repo that was never scanned, it suggests a first run once, remembered in `~/.claude/plugin-scout/nudged.txt`. Prints nothing otherwise. |
+| `plugin-scout-due.sh` | `SessionStart` (startup) | Prints one line when a repo's last `plugin-scout` run is 7+ days old (`PLUGIN_SCOUT_DAYS`) and the repo has new commits or a marketplace has refreshed since. In a git repo that was never scanned, it suggests a first run once, remembered in `~/.claude/plugin-scout/nudged.txt`. Prints nothing otherwise, and always nothing inside `claude plugin eval` (`CLAUDE_CODE_EVAL_CONFINED` is set). |
 
 The other hooks in `~/.claude/settings.json` belong to other apps:
 

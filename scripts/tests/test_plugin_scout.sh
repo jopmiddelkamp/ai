@@ -69,6 +69,8 @@ assert_eq "" "$out" "the hook is silent outside a git repo"
 
 fresh="$tmp/fresh"
 mkdir -p "$fresh" && git -C "$fresh" init -q
+out=$(CLAUDE_CODE_EVAL_CONFINED=1 CLAUDE_PROJECT_DIR="$fresh" bash "$hook")
+assert_eq "" "$out" "the hook is silent inside claude plugin eval"
 out=$(CLAUDE_PROJECT_DIR="$fresh" bash "$hook")
 assert_contains "$out" "no plugin check yet" "the hook nudges a repo that was never scanned"
 out=$(CLAUDE_PROJECT_DIR="$fresh" bash "$hook")
