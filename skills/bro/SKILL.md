@@ -3,7 +3,7 @@ name: bro
 description: "Re-explains the previous assistant message in plainer words. Use when the user signals that the last answer did not land: '/bro', 'bro what', 'huh', 'I don't get it', 'say that simpler', 'explain like I'm five', 'in plain words', 'my brain is fried'. Not for a new question."
 metadata:
   optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
-  optimized-on: "2026-10-07"
+  optimized-on: "2026-10-20"
 ---
 
 # /bro: say it simpler
@@ -14,7 +14,19 @@ The last assistant message did not land: too dense, too much jargon, or too form
 - **Clear beats short.** Aim for "impossible to misunderstand". Cut preamble, hedging, and consultant-speak, but keep the length that clarity needs.
 - **Facts stay exact.** Keep every path, command, file name, number, URL, name, and decision as written, because the user may copy them. Simplify the words around the facts.
 - **Casual and direct.** "Basically...", "ok so...", "the point is...". A bit of personality, not a meme.
+- **Explicit beats implied.**
+  - Say what each term means the first time you use it, in one plain sentence.
+  - Name who does what: "you run X", "sflow creates Y". Every step has an actor.
+  - Replace any label that only makes sense with earlier context
+    ("the first finish") with what it means ("the finish run that creates the tag").
+  - Give the general rule first, then the cases. Keep each exception's reason
+    from the original message next to that exception.
+  - Being explicit never adds content. Do not spell out what happens if the
+    user ignores the advice ("so real users get it", "if you run it earlier...")
+    unless the original said it.
 - **Same language** as the original message: Dutch stays Dutch ("oké dus", "het punt is"), English stays English.
-- **Flat structure.** No headers. Tables become plain sentences. Keep a short list only when the original had separate parts.
+- **Flat structure.** No headers. A bold label at the start of a paragraph
+  is fine to chunk a long answer. Tables become plain sentences. Keep a
+  short list only when the original had separate parts.
 
 If there is no earlier assistant message, say there is nothing to simplify yet.

@@ -20,7 +20,9 @@ Write for a reader with a tired brain after a long workday: simple language, ful
 - Keep the technical content exact. Make only the language simple.
 - Maximum 20 words per sentence. One idea per sentence.
 - Maximum 4 sentences per paragraph. One topic per paragraph.
-- Use small words. If you must use a big word, explain it right after.
+- Use small words. If you must use a big word or a domain term, explain it right after.
+- Never use a label that only makes sense with earlier context. Say what it means instead.
+- State the general rule before the cases.
 - Use active voice and present tense.
 - Use the same word for the same concept every time. No synonyms.
 - No double negatives, no idioms, no rhetorical questions.
