@@ -1,6 +1,6 @@
 ---
 type: tool_used
 tool: Skill
-input_match: '"skill"\s*:\s*"(?:[\w-]+:)?pull-request-comment-style"'
+input_match: '"skill"\s*:\s*"(?:[\w-]+:)?pr-comment-style"'
 arm: with-only
 ---

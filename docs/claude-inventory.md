@@ -11,8 +11,7 @@ are not symlinked into `~/.claude/skills`.
 |---|---|---|
 | `bro` | own | yes, `skills/bro` |
 | `brief` | own | yes, `skills/brief` |
-| `pull-request-comment-style` | own | yes, `skills/pull-request-comment-style` |
-| `review-pr` | own | yes, `skills/review-pr` |
+| `pr-comment-style` | own | yes, `skills/pr-comment-style` |
 | `research` | own | yes, `skills/research` |
 | `business-coach` | own | yes, `skills/business-coach` |
 | `1-percent` | own | yes, `skills/1-percent` |
