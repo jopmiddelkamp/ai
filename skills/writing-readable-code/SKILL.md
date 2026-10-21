@@ -1,6 +1,6 @@
 ---
 name: writing-readable-code
-description: "Use when writing, editing, refactoring, or generating any source code, script, query, config logic, or test, in any language, including one-line fixes. Triggers on 'implement', 'add', 'fix', 'refactor', 'write a function', 'write a script', 'production quality', and on any task that ends in a code change. Not for prose; not for reviewing someone else's PR (use review-pr)."
+description: "Use when writing, editing, refactoring, or generating any source code, script, query, config logic, or test, in any language, including one-line fixes. Triggers on 'implement', 'add', 'fix', 'refactor', 'write a function', 'write a script', 'production quality', and on any task that ends in a code change."
 metadata:
   optimized-for: "Claude 5.5 models (Opus 5.5, Sonnet 5.5)"
   optimized-on: "2026-10-07"
