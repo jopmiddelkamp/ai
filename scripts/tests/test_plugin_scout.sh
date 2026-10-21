@@ -76,7 +76,7 @@ assert_contains "$out" "no plugin check yet" "the hook nudges a repo that was ne
 out=$(CLAUDE_PROJECT_DIR="$fresh" bash "$hook")
 assert_eq "" "$out" "the hook nudges a repo only once"
 
-assert_eq "SessionStart" "$(jq -r '.hooks | keys[]' "$repo/hooks/hooks.json")" "hooks.json registers only the SessionStart hook"
+assert_eq "startup" "$(jq -r '.hooks.SessionStart[0].matcher' "$repo/hooks/hooks.json")" "hooks.json registers the plugin-scout hook on startup"
 
 cd / && rm -rf "$tmp"
 finish
