@@ -14,13 +14,13 @@ Work in three phases. Do not start a phase before the user has agreed to the res
 
 ## 1. Interview
 
-Ask one question per turn, in this order. Use `AskUserQuestion` when it is available; otherwise ask in plain text with numbered suggestions. The task question is the exception: it never gets suggestions.
+Ask one question per turn, in this order. Ask every question in plain text. Do not use `AskUserQuestion`: its fixed options get in the way of a dialog.
 
-After every answer the user gives, in every step, restate it as "As I understood, you want <X>. Right?" and wait for a yes before you go on. If the user corrects you, restate the corrected version the same way. Repeat until the user says yes. Never act on an answer the user has not confirmed.
+After every answer the user gives, in every step, restate it as "As I understood, you want <X>. Right?" and wait for a yes before you go on. If the user corrects you, restate the corrected version the same way. Repeat until the user says yes. Never act on an answer the user has not confirmed. In the guardrails and done steps, the full updated list followed by "Do you agree?" is that restatement; do not ask twice.
 
 ### Task
 
-The task must come from the user, in their own words. If the request already holds a task, use that text. Otherwise ask, in plain text and not with `AskUserQuestion`: "What is the task you want me to execute?" Do not offer options, and do not guess a task from the working tree, recent commits, or open files.
+The task must come from the user, in their own words. If the request already holds a task, use that text. Otherwise ask: "What is the task you want me to execute?" Do not offer options, and do not guess a task from the working tree, recent commits, or open files.
 
 Check the task against this bar for a professional task description:
 
@@ -36,7 +36,7 @@ Read the files or sources the task names, so the next suggestions fit the real m
 
 ### Guardrails
 
-Ask: "What are the guardrails for this execution?" Offer 3 to 4 suggested guardrails drawn from this task, and let the user pick several, edit them, or add their own.
+Propose 3 to 4 guardrails drawn from this task as a numbered list, and ask: "Do you agree with these guardrails? You can add, remove, or change any of them." When the user asks for a change, apply it, show the full updated list, and ask again. Loop until the user agrees.
 
 A good suggestion names a concrete action or object the task could plausibly touch: "don't change the report template", "don't email anyone", "don't push to main", "no new dependencies", "spend at most 30 minutes of searching". Look for these sources of harm in the task:
 
@@ -50,7 +50,7 @@ Do not suggest generic care ("be careful", "follow best practices"). Each guardr
 
 ### Definition of done
 
-Ask: "What is the definition of done?" Offer 3 to 4 suggested criteria drawn from the task and the guardrails just agreed, and let the user pick, edit, or add.
+Propose 3 to 4 done criteria drawn from the task and the guardrails just agreed as a numbered list, and ask: "Do you agree with this definition of done? You can add, remove, or change any of them." Handle changes the same way as for the guardrails: apply, show the full updated list, ask again, until the user agrees.
 
 A good criterion is checked by something other than you or the user: a test suite, a build, a source file, a sum that must reconcile, a validator, a diff that must be empty. "Every figure matches the export" beats "the report looks right". Turn each guardrail into a check where you can ("`git diff templates/` is empty"). Include at least one criterion about the output itself, not only about its absence of harm.
 
