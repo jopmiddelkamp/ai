@@ -70,6 +70,7 @@ bash scripts/check-drift.sh  # what differs between repo and machine
 bash scripts/check-secrets.sh  # is anything leaking
 bash scripts/tests/run.sh    # run every test
 bash scripts/web-prefs.sh    # copy my claude.ai preferences text
+bash scripts/eval-with-plugins.sh 'prcs-*' humanizer@humanizer -- --runs 3  # evals that need another plugin
 ```
 
 ## Claude web

@@ -29,6 +29,7 @@ bash scripts/install.sh     # symlink memory into ~/.claude
 bash scripts/apply-mcp.sh   # render mcp/servers.json into ~/.claude.json
 bash scripts/check-drift.sh # report differences
 bash scripts/web-prefs.sh   # copy the claude.ai preferences text to the clipboard
+bash scripts/eval-with-plugins.sh 'prcs-*' humanizer@humanizer  # run evals with another plugin loaded
 ```
 
 ## For another agent
