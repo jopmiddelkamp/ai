@@ -9,6 +9,7 @@ are not symlinked into `~/.claude/skills`.
 
 | Name | Source | In repo |
 |---|---|---|
+| `best-solution` | own | yes, `skills/best-solution` |
 | `bro` | own | yes, `skills/bro` |
 | `brief` | own | yes, `skills/brief` |
 | `pr-comment-style` | own | yes, `skills/pr-comment-style` |
