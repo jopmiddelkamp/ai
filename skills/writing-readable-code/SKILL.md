@@ -20,6 +20,7 @@ These rules hold for every line you write or change, for the whole task. A funct
 - The happy path runs top to bottom at the lowest indent. Edge cases leave early through guard clauses.
 - Nesting is at most 2 levels of control flow (`if`, loops, `try`). A deeper body becomes a named function.
 - A condition with 3 or more parts becomes named booleans.
+- A condition that spans more than one line, or holds a call with 2 or more arguments, becomes a named boolean, also when it has only one part. The `if` line then shows the intent in one scan: `if (!isSourceAccountOfUser)`.
 - Conditions are positive where possible: `isPaid`, not `!isUnpaid`.
 - Each expression has at most one side effect, and it is the whole statement. No `i++` inside arguments, no assignment used as a value, no nested ternaries.
 - Split a function when a part has its own clear name and purpose, never to hit a line count. Tightly related code stays together.
@@ -54,7 +55,7 @@ Read your diff once as a strict reviewer and fix each of these:
 
 1. A name with an abbreviation or a filler word.
 2. A comment that repeats the code.
-3. Nesting deeper than 2 levels, or a condition with 3 or more unnamed parts.
+3. Nesting deeper than 2 levels, a condition with 3 or more unnamed parts, or an unnamed condition that spans more than one line.
 4. A function with one caller that only wraps another call.
 
 ## Example
@@ -80,6 +81,32 @@ for (const [sku, quantity] of quantityBySku) {
     topSku = sku;
     topQuantity = quantity;
   }
+}
+```
+
+Before: a one-part condition that spans 4 lines. The reader must decode the call to find the intent.
+
+```csharp
+if (!string.Equals(
+        clientSignedTransaction.SourceAccount.AccountId,
+        user.StellarAccountId,
+        StringComparison.Ordinal))
+{
+    throw new ForbiddenException("The transaction source account does not belong to the user.");
+}
+```
+
+After: the name carries the intent, and the `if` line reads in one scan.
+
+```csharp
+var isSourceAccountOfUser = string.Equals(
+    clientSignedTransaction.SourceAccount.AccountId,
+    user.StellarAccountId,
+    StringComparison.Ordinal);
+
+if (!isSourceAccountOfUser)
+{
+    throw new ForbiddenException("The transaction source account does not belong to the user.");
 }
 ```
 
